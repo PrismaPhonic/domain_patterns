@@ -1,6 +1,3 @@
-use std::error::Error;
-use std::hash::Hash;
-
 //! # Database Abstraction Traits
 //!
 //! This project provides a `Repository` trait and `Entity` trait.  A repository is a collection like abstraction over database
@@ -33,11 +30,15 @@ use std::hash::Hash;
 //! The entity trait simply defines that an entity must have some sort of persistent identity.  This is established with a single function
 //! signature that ensures any `Entity` must have an `id()` method that returns a globally unique id of some kind.
 
+use std::error::Error;
+use std::hash::Hash;
+
 /// A trait that provides a collection like abstraction over database access.
 ///
 /// Generic `T` is some struct that implements `Entity<K>` where `K` is used as the key in the repository methods.  In other words
 /// it's expected that an entities id is used as the key for insert and retrieval.
 pub trait Repository<K: Hash + Eq, T: Entity<K>> {
+    type Error;
     /// Inserts a key-entity pair into an underlying persistent storage (MySQL, Postgres, Mongo etc.).  Implementation is
     /// dependent on the persistence mechanism and up the implementer to design.
     ///
@@ -57,7 +58,7 @@ pub trait Repository<K: Hash + Eq, T: Entity<K>> {
     /// [`None`]: https://doc.rust-lang.org/std/option/enum.Option.html#variant.None
     /// [`Eq`]: https://doc.rust-lang.org/std/cmp/trait.Eq.html
     /// [`Hash`]: https://doc.rust-lang.org/std/hash/trait.Hash.html
-    fn insert(&mut self, key: &K, entity: &T) -> Result<Option<T>, Box<dyn Error>>;
+    fn insert(&mut self, key: &K, entity: &T) -> Result<Option<T>, self::Error>;
 
     /// Returns the entity corresponding to the supplied key as an owned type.
     ///
@@ -71,7 +72,7 @@ pub trait Repository<K: Hash + Eq, T: Entity<K>> {
     ///
     /// [`Eq`]: https://doc.rust-lang.org/std/cmp/trait.Eq.html
     /// [`Hash`]: https://doc.rust-lang.org/std/hash/trait.Hash.html
-    fn get(&self, key: &K) -> Result<Option<T>, Box<dyn Error>>;
+    fn get(&self, key: &K) -> Result<Option<T>, self::Error>;
 
 
     /// Returns a `Vec<T>` of entities, based on the supplied `page_num` and `page_size`.
@@ -80,7 +81,7 @@ pub trait Repository<K: Hash + Eq, T: Entity<K>> {
     /// # Failure case
     ///
     /// If we fail to communicate with the underlying storage, then an error is returned.
-    fn get_paged(&self, page_num: usize, page_size: usize) -> Result<Vec<T>, Box<dyn Error>>;
+    fn get_paged(&self, page_num: usize, page_size: usize) -> Result<Vec<T>, self::Error>;
 
     /// Returns `true` if the underlying storage contains an entity at the specified key.
     ///
@@ -94,7 +95,7 @@ pub trait Repository<K: Hash + Eq, T: Entity<K>> {
     ///
     /// [`Eq`]: https://doc.rust-lang.org/std/cmp/trait.Eq.html
     /// [`Hash`]: https://doc.rust-lang.org/std/hash/trait.Hash.html
-    fn contains_key(&self, key: &K) -> Result<bool, Box<dyn Error>>;
+    fn contains_key(&self, key: &K) -> Result<bool, self::Error>;
 
     /// Removes an entity from the underlying storage at the given key,
     /// returning the entity at the key if it existed, and otherwise returning [`None`]
@@ -110,7 +111,7 @@ pub trait Repository<K: Hash + Eq, T: Entity<K>> {
     /// [`None`]: https://doc.rust-lang.org/std/option/enum.Option.html#variant.None
     /// [`Eq`]: https://doc.rust-lang.org/std/cmp/trait.Eq.html
     /// [`Hash`]: https://doc.rust-lang.org/std/hash/trait.Hash.html
-    fn remove(&mut self, key: &K) -> Result<Option<T>, Box<dyn Error>>;
+    fn remove(&mut self, key: &K) -> Result<Option<T>, self::Error>;
 }
 
 /// A trait that defines an `Entity`, which is any object with a unique and globally persistent identity.
@@ -122,6 +123,7 @@ pub trait Entity<Q: Hash + Eq> {
 mod tests {
     use super::*;
     use std::collections::HashMap;
+    use std::{fmt, error};
 
     struct NaiveUser {
         user_id: String,
@@ -160,13 +162,30 @@ mod tests {
         }
     }
 
+    struct MockDbError;
+
+    impl fmt::Display for MockDbError {
+        fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
+            write!(f, "Something went wrong at db.")
+        }
+    }
+
+    impl error::Error for MockDbError {
+        fn source(&self) -> Option<&(dyn error::Error + 'static)> {
+            // Generic error, underlying cause isn't tracked.
+            None
+        }
+    }
+
     impl Repository<String, NaiveUser> for MockUserRepository {
-        fn insert(&mut self, key: &String, entity: &NaiveUser) -> Result<Option<NaiveUser>, Box<dyn Error>> {
+        type Error = MockDbError;
+
+        fn insert(&mut self, key: &String, entity: &NaiveUser) -> Result<Option<NaiveUser>, self::Error> {
             let result = self.data.insert(key.clone(), entity.clone());
             Ok(result)
         }
 
-        fn get(&self, key: &String) -> Result<Option<NaiveUser>, Box<dyn Error>> {
+        fn get(&self, key: &String) -> Result<Option<NaiveUser>, self::Error> {
             let result = if let Some(user) = self.data.get(key) {
                 Some(user.clone())
             } else {
@@ -175,7 +194,7 @@ mod tests {
             Ok(result)
         }
 
-        fn get_paged(&self, page_num: usize, page_size: usize) -> Result<Vec<NaiveUser>, Box<dyn Error>> {
+        fn get_paged(&self, page_num: usize, page_size: usize) -> Result<Vec<NaiveUser>, self::Error> {
             let entire_collection: Vec<NaiveUser> = self.data
                 .iter()
                 .map(|(_, u)| {
@@ -198,12 +217,12 @@ mod tests {
             Ok(result)
         }
 
-        fn contains_key(&self, key: &String) -> Result<bool, Box<dyn Error>> {
+        fn contains_key(&self, key: &String) -> Result<bool, self::Error> {
             let result = self.data.contains_key(key);
             Ok(result)
         }
 
-        fn remove(&mut self, key: &String) -> Result<Option<NaiveUser>, Box<dyn Error>> {
+        fn remove(&mut self, key: &String) -> Result<Option<NaiveUser>, self::Error> {
             let result = self.data.remove(key);
             Ok(result)
         }
