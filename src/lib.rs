@@ -37,7 +37,10 @@ use std::hash::Hash;
 /// Generic `T` is some struct that implements `Entity<K>` where `K` is used as the key in the repository methods.  In other words
 /// it's expected that an entities id is used as the key for insert and retrieval.
 pub trait Repository<K: Hash + Eq, T: Entity<K>> {
+    /// The implementer of this trait must point this type at some sort of `Error`.  This `Error` should communicate that there was some
+    /// kind of problem related to communication with the underlying database.
     type Error;
+
     /// Inserts a key-entity pair into an underlying persistent storage (MySQL, Postgres, Mongo etc.).  Implementation is
     /// dependent on the persistence mechanism and up the implementer to design.
     ///
