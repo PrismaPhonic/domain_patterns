@@ -30,7 +30,6 @@
 //! The entity trait simply defines that an entity must have some sort of persistent identity.  This is established with a single function
 //! signature that ensures any `Entity` must have an `id()` method that returns a globally unique id of some kind.
 
-use std::error::Error;
 use std::hash::Hash;
 
 /// A trait that provides a collection like abstraction over database access.
@@ -58,7 +57,7 @@ pub trait Repository<K: Hash + Eq, T: Entity<K>> {
     /// [`None`]: https://doc.rust-lang.org/std/option/enum.Option.html#variant.None
     /// [`Eq`]: https://doc.rust-lang.org/std/cmp/trait.Eq.html
     /// [`Hash`]: https://doc.rust-lang.org/std/hash/trait.Hash.html
-    fn insert(&mut self, key: &K, entity: &T) -> Result<Option<T>, self::Error>;
+    fn insert(&mut self, key: &K, entity: &T) -> Result<Option<T>, Self::Error>;
 
     /// Returns the entity corresponding to the supplied key as an owned type.
     ///
@@ -72,7 +71,7 @@ pub trait Repository<K: Hash + Eq, T: Entity<K>> {
     ///
     /// [`Eq`]: https://doc.rust-lang.org/std/cmp/trait.Eq.html
     /// [`Hash`]: https://doc.rust-lang.org/std/hash/trait.Hash.html
-    fn get(&self, key: &K) -> Result<Option<T>, self::Error>;
+    fn get(&self, key: &K) -> Result<Option<T>, Self::Error>;
 
 
     /// Returns a `Vec<T>` of entities, based on the supplied `page_num` and `page_size`.
@@ -81,7 +80,7 @@ pub trait Repository<K: Hash + Eq, T: Entity<K>> {
     /// # Failure case
     ///
     /// If we fail to communicate with the underlying storage, then an error is returned.
-    fn get_paged(&self, page_num: usize, page_size: usize) -> Result<Vec<T>, self::Error>;
+    fn get_paged(&self, page_num: usize, page_size: usize) -> Result<Vec<T>, Self::Error>;
 
     /// Returns `true` if the underlying storage contains an entity at the specified key.
     ///
@@ -95,7 +94,7 @@ pub trait Repository<K: Hash + Eq, T: Entity<K>> {
     ///
     /// [`Eq`]: https://doc.rust-lang.org/std/cmp/trait.Eq.html
     /// [`Hash`]: https://doc.rust-lang.org/std/hash/trait.Hash.html
-    fn contains_key(&self, key: &K) -> Result<bool, self::Error>;
+    fn contains_key(&self, key: &K) -> Result<bool, Self::Error>;
 
     /// Removes an entity from the underlying storage at the given key,
     /// returning the entity at the key if it existed, and otherwise returning [`None`]
@@ -111,7 +110,7 @@ pub trait Repository<K: Hash + Eq, T: Entity<K>> {
     /// [`None`]: https://doc.rust-lang.org/std/option/enum.Option.html#variant.None
     /// [`Eq`]: https://doc.rust-lang.org/std/cmp/trait.Eq.html
     /// [`Hash`]: https://doc.rust-lang.org/std/hash/trait.Hash.html
-    fn remove(&mut self, key: &K) -> Result<Option<T>, self::Error>;
+    fn remove(&mut self, key: &K) -> Result<Option<T>, Self::Error>;
 }
 
 /// A trait that defines an `Entity`, which is any object with a unique and globally persistent identity.
@@ -162,6 +161,7 @@ mod tests {
         }
     }
 
+    #[derive(Debug, Clone)]
     struct MockDbError;
 
     impl fmt::Display for MockDbError {
@@ -180,12 +180,12 @@ mod tests {
     impl Repository<String, NaiveUser> for MockUserRepository {
         type Error = MockDbError;
 
-        fn insert(&mut self, key: &String, entity: &NaiveUser) -> Result<Option<NaiveUser>, self::Error> {
+        fn insert(&mut self, key: &String, entity: &NaiveUser) -> Result<Option<NaiveUser>, Self::Error> {
             let result = self.data.insert(key.clone(), entity.clone());
             Ok(result)
         }
 
-        fn get(&self, key: &String) -> Result<Option<NaiveUser>, self::Error> {
+        fn get(&self, key: &String) -> Result<Option<NaiveUser>, Self::Error> {
             let result = if let Some(user) = self.data.get(key) {
                 Some(user.clone())
             } else {
@@ -194,7 +194,7 @@ mod tests {
             Ok(result)
         }
 
-        fn get_paged(&self, page_num: usize, page_size: usize) -> Result<Vec<NaiveUser>, self::Error> {
+        fn get_paged(&self, page_num: usize, page_size: usize) -> Result<Vec<NaiveUser>, Self::Error> {
             let entire_collection: Vec<NaiveUser> = self.data
                 .iter()
                 .map(|(_, u)| {
@@ -217,12 +217,12 @@ mod tests {
             Ok(result)
         }
 
-        fn contains_key(&self, key: &String) -> Result<bool, self::Error> {
+        fn contains_key(&self, key: &String) -> Result<bool, Self::Error> {
             let result = self.data.contains_key(key);
             Ok(result)
         }
 
-        fn remove(&mut self, key: &String) -> Result<Option<NaiveUser>, self::Error> {
+        fn remove(&mut self, key: &String) -> Result<Option<NaiveUser>, Self::Error> {
             let result = self.data.remove(key);
             Ok(result)
         }
