@@ -16,9 +16,10 @@
 //! Due to the nature of the abstraction, it makes more sense for the Repository to take in references (because that's
 //! all it needs to persist the data to an underlying storage system) and return owned values.
 //!
-//! Just like the standard libraries `HashMap`, the `insert` method acts more like an `upsert` (if the key already exists,
-//! it updates the value at that key, and otherwise inserts a new key-value pair).  It is up to the caller to re-use `insert`
-//! after they have modified an entity, if they are trying to `update` that entity in the database.
+//! Unlike the standard libraries `HashMap` api, the `insert` does not update the value at the key, if the key already exists.
+//! This is to prevent misuse of the repository.  The logic if flipped from `HashMap`'s `insert` method.  If the key already
+//! exists, then `None` is returned.  If the key does not exist, then the entity itself is returned.  This is useful for cases
+//! in which we want to update an entity with computed data from a database and return that to the caller.
 //!
 //! The other way in which this differs from the API for the standard libraries `HashMap` is that all methods return a `Result`.
 //! This is due to the fact that we might have a failure to communicate with the underlying storage mechanism, or a
@@ -41,13 +42,17 @@ pub trait Repository<K: Hash + Eq, T: Entity<K>> {
     /// kind of problem related to communication with the underlying database.
     type Error;
 
-    /// Inserts a key-entity pair into an underlying persistent storage (MySQL, Postgres, Mongo etc.).  Implementation is
+    /// Inserts an entity into the underlying persistent storage (MySQL, Postgres, Mongo etc.).  Implementation is
     /// dependent on the persistence mechanism and up the implementer to design.
     ///
-    /// If the underlying storage did not have this key present, [`None`] is returned.
+    /// Entity should be inserted at it's globally unique id, which because it implements the `Entity` interface is
+    /// accessible by calling `.id()`.
     ///
-    /// If the underlying storage did have this key present, the value is updated, and the old
-    /// value is returned.
+    /// If the underlying storage did not have this key present, then insert is successful and the entity is returned.
+    /// It might be returned with updated (computed) data that was computed by the database.
+    ///
+    /// If the underlying storage does have the key present, then None is returned.  This should be an indication to the caller
+    /// That they have to use the `update` method should they be looking to update the entity at that key.
     ///
     /// # Failure case
     ///
@@ -60,7 +65,7 @@ pub trait Repository<K: Hash + Eq, T: Entity<K>> {
     /// [`None`]: https://doc.rust-lang.org/std/option/enum.Option.html#variant.None
     /// [`Eq`]: https://doc.rust-lang.org/std/cmp/trait.Eq.html
     /// [`Hash`]: https://doc.rust-lang.org/std/hash/trait.Hash.html
-    fn insert(&mut self, key: &K, entity: &T) -> Result<Option<T>, Self::Error>;
+    fn insert(&mut self, entity: &T) -> Result<Option<T>, Self::Error>;
 
     /// Returns the entity corresponding to the supplied key as an owned type.
     ///
@@ -119,6 +124,8 @@ pub trait Repository<K: Hash + Eq, T: Entity<K>> {
 /// A trait that defines an `Entity`, which is any object with a unique and globally persistent identity.
 ///
 /// The generic type `K` should match the same type as the internal globally unique id used for the entity.
+/// Be careful when choosing what to return here.  The result of `.id()` will be used as the primary key
+/// for the entity when communicating with a database via a repository.
 ///
 /// # Example
 /// ```rust
@@ -202,8 +209,16 @@ mod tests {
     impl Repository<String, NaiveUser> for MockUserRepository {
         type Error = MockDbError;
 
-        fn insert(&mut self, key: &String, entity: &NaiveUser) -> Result<Option<NaiveUser>, Self::Error> {
-            let result = self.data.insert(key.clone(), entity.clone());
+        fn insert(&mut self, entity: &NaiveUser) -> Result<Option<NaiveUser>, Self::Error> {
+            let key = entity.id();
+
+            let result = if self.contains_key(&key).unwrap() {
+                None
+            } else {
+                self.data.insert(entity.id(), entity.clone());
+                self.get(&key).unwrap()
+            };
+
             Ok(result)
         }
 
@@ -261,10 +276,31 @@ mod tests {
             email: "test_email".to_string()
         };
         let mut user_repo = MockUserRepository::new();
-        user_repo.insert(&user_id, &test_user);
+        user_repo.insert(&test_user);
         let success_result = user_repo.get(&user_id).unwrap();
 
         assert_eq!(&success_result.unwrap().first_name, &test_user.first_name)
+    }
+
+    #[test]
+    #[allow(unused)]
+    fn test_cant_add_duplicate() {
+        let user_id = "test_id".to_string();
+        let test_user = NaiveUser {
+            user_id: user_id.clone(),
+            first_name: "first_name".to_string(),
+            last_name: "test_lname".to_string(),
+            email: "test_email".to_string()
+        };
+        let mut user_repo = MockUserRepository::new();
+        let returned_entity = user_repo.insert(&test_user).unwrap();
+        assert!(returned_entity.is_some());
+
+        let success_result = user_repo.get(&user_id).unwrap();
+        assert_eq!(&success_result.unwrap().first_name, &test_user.first_name);
+
+        let failure_result = user_repo.insert(&test_user).unwrap();
+        assert!(failure_result.is_none());
     }
 
     #[test]
@@ -278,7 +314,7 @@ mod tests {
             email: "test_email".to_string()
         };
         let mut user_repo = MockUserRepository::new();
-        user_repo.insert(&user_id, &test_user);
+        user_repo.insert(&test_user);
 
         // we first check that user is in repo
         assert!(user_repo.contains_key(&user_id).unwrap());
@@ -307,9 +343,9 @@ mod tests {
         };
         let mut user_repo = MockUserRepository::new();
 
-        user_repo.insert(&user_id1, &test_user1);
+        user_repo.insert(&test_user1);
         assert!(user_repo.contains_key(&user_id1).unwrap());
-        user_repo.insert(&user_id2, &test_user2);
+        user_repo.insert(&test_user2);
         assert!(user_repo.contains_key(&user_id2).unwrap());
 
         let results = user_repo.get_paged(1, 2).unwrap();
