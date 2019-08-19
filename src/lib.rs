@@ -117,8 +117,27 @@ pub trait Repository<K: Hash + Eq, T: Entity<K>> {
 }
 
 /// A trait that defines an `Entity`, which is any object with a unique and globally persistent identity.
-pub trait Entity<Q: Hash + Eq> {
-    fn id(&self) -> Q;
+///
+/// The generic type `K` should match the same type as the internal globally unique id used for the entity.
+///
+/// # Example
+/// ```rust
+/// use repository_pattern::Entity;
+///
+/// struct User {
+///     user_id: String,
+///     email: String,
+///     password: String,
+/// }
+///
+/// impl Entity<String> for User {
+///     fn id(&self) -> K {
+///         self.user_id.clone()
+///     }
+/// }
+/// ```
+pub trait Entity<K: Hash + Eq> {
+    fn id(&self) -> K;
 }
 
 #[cfg(test)]
