@@ -42,11 +42,10 @@ pub trait Repository<K: Hash + Eq, T: Entity<K>> {
     /// kind of problem related to communication with the underlying database.
     type Error;
 
-    /// Inserts an entity into the underlying persistent storage (MySQL, Postgres, Mongo etc.).  Implementation is
-    /// dependent on the persistence mechanism and up the implementer to design.
+    /// Inserts an entity into the underlying persistent storage (MySQL, Postgres, Mongo etc.).
     ///
-    /// Entity should be inserted at it's globally unique id, which because it implements the [`Entity`] interface is
-    /// accessible by calling [`id()`].
+    /// Entity should be inserted at it's globally unique id. It implements the [`Entity`] interface,
+    /// so it's globally unique id can be accessed by calling [`id()`].
     ///
     /// If the underlying storage did not have this key present, then insert is successful and the entity is returned.
     /// It might be returned with updated (computed) data that was computed by the database.
@@ -93,6 +92,18 @@ pub trait Repository<K: Hash + Eq, T: Entity<K>> {
     /// [`Eq`]: https://doc.rust-lang.org/std/cmp/trait.Eq.html
     /// [`Hash`]: https://doc.rust-lang.org/std/hash/trait.Hash.html
     fn contains_key(&self, key: &K) -> Result<bool, Self::Error>;
+
+    /// Updates the entity in the underlying storage mechanism and returns the up to date
+    /// entity to the caller.  If the entity does not exist in the database (it's unique
+    /// id is not in use), then we return [`None`].
+    ///
+    /// # Failure case
+    ///
+    /// If we fail to communicate with the underlying storage, then an error is returned.
+    ///
+    /// [`Eq`]: https://doc.rust-lang.org/std/cmp/trait.Eq.html
+    /// [`Hash`]: https://doc.rust-lang.org/std/hash/trait.Hash.html
+    fn update(&mut self, entity: &T) -> Result<Option<T>, Self::Error>;
 
     /// Removes an entity from the underlying storage at the given key,
     /// returning the entity at the key if it existed, and otherwise returning [`None`]
@@ -247,6 +258,19 @@ mod tests {
             Ok(result)
         }
 
+        fn update(&mut self, entity: &NaiveUser) -> Result<Option<NaiveUser>, Self::Error> {
+            let key = entity.id();
+
+            let result = if self.contains_key(&key).unwrap() {
+                self.data.insert(entity.id(), entity.clone());
+                self.get(&key).unwrap()
+            } else {
+                None
+            };
+
+            Ok(result)
+        }
+
         fn remove(&mut self, key: &String) -> Result<Option<NaiveUser>, Self::Error> {
             let result = self.data.remove(key);
             Ok(result)
@@ -289,6 +313,33 @@ mod tests {
 
         let failure_result = user_repo.insert(&test_user).unwrap();
         assert!(failure_result.is_none());
+    }
+
+    #[test]
+    #[allow(unused)]
+    fn test_update_user() {
+        let user_id = "test_id".to_string();
+        let mut test_user = NaiveUser {
+            user_id: user_id.clone(),
+            first_name: "first_name".to_string(),
+            last_name: "test_lname".to_string(),
+            email: "test_email".to_string()
+        };
+        let mut user_repo = MockUserRepository::new();
+        let returned_entity = user_repo.insert(&test_user).unwrap();
+        assert!(returned_entity.is_some());
+
+        let updated_name = "new_name".to_string();
+        test_user.first_name = updated_name.clone();
+        let mut updated_user = user_repo.update(&test_user).unwrap();
+        // check that we get back Some() which implies updating worked.
+        assert!(returned_entity.is_some());
+        // Check that our name is correct in the returned (updated) user.
+        assert_eq!(&updated_user.unwrap().first_name, &updated_name);
+
+        // sanity check with fresh get and check that name was updated;
+        updated_user = user_repo.get(&user_id).unwrap();
+        assert_eq!(&updated_user.unwrap().first_name, &updated_name);
     }
 
     #[test]
