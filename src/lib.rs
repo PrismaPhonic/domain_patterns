@@ -17,7 +17,7 @@
 //! all it needs to persist the data to an underlying storage system) and return owned values.
 //!
 //! Unlike the standard libraries `HashMap` api, the `insert` does not update the value at the key, if the key already exists.
-//! This is to prevent misuse of the repository.  The logic if flipped from `HashMap`'s `insert` method.  If the key already
+//! This is to prevent misuse of the repository.  The logic is flipped from `HashMap`'s `insert` method.  If the key already
 //! exists, then `None` is returned.  If the key does not exist, then the entity itself is returned.  This is useful for cases
 //! in which we want to update an entity with computed data from a database and return that to the caller.
 //!
@@ -45,23 +45,20 @@ pub trait Repository<K: Hash + Eq, T: Entity<K>> {
     /// Inserts an entity into the underlying persistent storage (MySQL, Postgres, Mongo etc.).  Implementation is
     /// dependent on the persistence mechanism and up the implementer to design.
     ///
-    /// Entity should be inserted at it's globally unique id, which because it implements the `Entity` interface is
-    /// accessible by calling `.id()`.
+    /// Entity should be inserted at it's globally unique id, which because it implements the [`Entity`] interface is
+    /// accessible by calling [`id()`].
     ///
     /// If the underlying storage did not have this key present, then insert is successful and the entity is returned.
     /// It might be returned with updated (computed) data that was computed by the database.
     ///
-    /// If the underlying storage does have the key present, then None is returned.  This should be an indication to the caller
-    /// That they have to use the `update` method should they be looking to update the entity at that key.
+    /// If the underlying storage does have the key present, then [`None`] is returned.
     ///
     /// # Failure case
     ///
     /// If we fail to communicate with the underlying storage, then an error is returned.
     ///
-    /// The supplied key may be any borrowed form of the map's key type, but
-    /// [`Hash`] and [`Eq`] on the borrowed form *must* match those for
-    /// the key type.
-    ///
+    /// [`Entity`]: ./trait.Entity.html
+    /// [`id()`]: ./trait.Entity.html#tymethod.id
     /// [`None`]: https://doc.rust-lang.org/std/option/enum.Option.html#variant.None
     /// [`Eq`]: https://doc.rust-lang.org/std/cmp/trait.Eq.html
     /// [`Hash`]: https://doc.rust-lang.org/std/hash/trait.Hash.html
@@ -72,10 +69,6 @@ pub trait Repository<K: Hash + Eq, T: Entity<K>> {
     /// # Failure case
     ///
     /// If we fail to communicate with the underlying storage, then an error is returned.
-    ///
-    /// The supplied key may be any borrowed form of the map's key type, but
-    /// [`Hash`] and [`Eq`] on the borrowed form *must* match those for
-    /// the key type.
     ///
     /// [`Eq`]: https://doc.rust-lang.org/std/cmp/trait.Eq.html
     /// [`Hash`]: https://doc.rust-lang.org/std/hash/trait.Hash.html
@@ -90,11 +83,8 @@ pub trait Repository<K: Hash + Eq, T: Entity<K>> {
     /// If we fail to communicate with the underlying storage, then an error is returned.
     fn get_paged(&self, page_num: usize, page_size: usize) -> Result<Vec<T>, Self::Error>;
 
-    /// Returns `true` if the underlying storage contains an entity at the specified key.
-    ///
-    /// The key may be any borrowed form of the map's key type, but
-    /// [`Hash`] and [`Eq`] on the borrowed form *must* match those for
-    /// the key type.
+    /// Returns `true` if the underlying storage contains an entity at the specified key,
+    /// and otherwise returns `false`.
     ///
     /// # Failure case
     ///
@@ -106,10 +96,6 @@ pub trait Repository<K: Hash + Eq, T: Entity<K>> {
 
     /// Removes an entity from the underlying storage at the given key,
     /// returning the entity at the key if it existed, and otherwise returning [`None`]
-    ///
-    /// The key may be any borrowed form of the map's key type, but
-    /// [`Hash`] and [`Eq`] on the borrowed form *must* match those for
-    /// the key type.
     ///
     /// # Failure case
     ///
@@ -124,7 +110,7 @@ pub trait Repository<K: Hash + Eq, T: Entity<K>> {
 /// A trait that defines an `Entity`, which is any object with a unique and globally persistent identity.
 ///
 /// The generic type `K` should match the same type as the internal globally unique id used for the entity.
-/// Be careful when choosing what to return here.  The result of `.id()` will be used as the primary key
+/// Be careful when choosing what to return here.  The result of [`id()`] will be used as the primary key
 /// for the entity when communicating with a database via a repository.
 ///
 /// # Example
@@ -138,11 +124,13 @@ pub trait Repository<K: Hash + Eq, T: Entity<K>> {
 /// }
 ///
 /// impl Entity<String> for User {
-///     fn id(&self) -> K {
+///     fn id(&self) -> String {
 ///         self.user_id.clone()
 ///     }
 /// }
 /// ```
+///
+/// [`id()`]: ./trait.Entity.html#tymethod.id
 pub trait Entity<K: Hash + Eq> {
     fn id(&self) -> K;
 }
