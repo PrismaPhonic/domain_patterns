@@ -1,6 +1,6 @@
-[![crates.io](http://meritbadge.herokuapp.com/domain_patterns)](https://crates.io/crates/domain_patterns)
+[![crates.io](http://meritbadge.herokuapp.com/domain_patterns)](https://crates.io/crates/domain-patterns)
 [![MIT licensed](https://img.shields.io/badge/license-MIT-blue.svg)](./LICENSE)
-[![Released API docs](https://docs.rs/domain_patterns/badge.svg)](https://docs.rs/domain_patterns)
+[![Released API docs](https://docs.rs/domain-patterns/badge.svg)](https://docs.rs/domain-patterns)
 
 # Domain Patterns
 
