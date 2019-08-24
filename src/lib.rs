@@ -1,4 +1,4 @@
-//! # Domain Driven Design Traits
+//! # Domain Patterns
 //!
 //! This project provides patterns from the world of Domain Driven Design.
 //!
@@ -28,6 +28,18 @@
 //!
 //! The entity trait simply defines that an entity must have some sort of persistent identity.  This is established with a single function
 //! signature that ensures any `Entity` must have an `id()` method that returns a globally unique id of some kind.
+//!
+//! # ValueObject Trait
+//!
+//! The `ValueObject` trait defines characteristics of a value object, which is an object that holds some immutable value, and validates
+//! incoming data to make sure it conforms to certain requirements.  An example would be if you have an `Email` struct.  At all times that
+//! struct should only hold valid email addresses.  If `Email` implements `ValueObject` trait, then the implementor will be required to
+//! write a `try_from` implementation, which should in turn call their implementation of `validate` and essentially return an error
+//! if validation fails, or create a value object upon success.  Some rules for value objects are:
+//!
+//! 1. Value objects are immutable.
+//! 2. Value objects should validate data that is used to construct them (the "value" they hold after successful validation).
+//! 3. Value objects do not have globally unique identity.
 
 use std::hash::Hash;
 use std::convert::TryFrom;

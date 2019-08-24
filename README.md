@@ -1,8 +1,6 @@
-# Database Abstraction Traits
+# Domain Patterns
 
-This project provides a `Repository` trait and `Entity` trait.  A repository is a collection like abstraction over database
-access.  We restrict it's use to that of persisting entities, which are objects that have globally unique and persistent
-identities.
+This project provides patterns from the world of Domain Driven Design.
 
 ## Repository Trait
 
@@ -16,9 +14,10 @@ the data and that data is passed to the repository which constructs an entity an
 Due to the nature of the abstraction, it makes more sense for the Repository to take in references (because that's
 all it needs to persist the data to an underlying storage system) and return owned values.
 
-Just like the standard libraries `HashMap`, the `insert` method acts more like an `upsert` (if the key already exists,
-it updates the value at that key, and otherwise inserts a new key-value pair).  It is up to the caller to re-use `insert`
-after they have modified an entity, if they are trying to `update` that entity in the database.
+Unlike the standard libraries `HashMap` api, the `insert` does not update the value at the key, if the key already exists.
+This is to prevent misuse of the repository.  The logic is flipped from `HashMap`'s `insert` method.  If the key already
+exists, then `None` is returned.  If the key does not exist, then the entity itself is returned.  This is useful for cases
+in which we want to update an entity with computed data from a database and return that to the caller.
 
 The other way in which this differs from the API for the standard libraries `HashMap` is that all methods return a `Result`.
 This is due to the fact that we might have a failure to communicate with the underlying storage mechanism, or a
@@ -29,3 +28,17 @@ from the standard library `HashMap` while the failure case communicates an issue
 
 The entity trait simply defines that an entity must have some sort of persistent identity.  This is established with a single function
 signature that ensures any `Entity` must have an `id()` method that returns a globally unique id of some kind.
+
+## ValueObject Trait
+
+The `ValueObject` trait defines characteristics of a value object, which is an object that holds some immutable value, and validates
+incoming data to make sure it conforms to certain requirements.  An example would be if you have an `Email` struct.  At all times that
+struct should only hold valid email addresses.  If `Email` implements `ValueObject` trait, then the implementor will be required to
+write a `try_from` implementation, which should in turn call their implementation of `validate` and essentially return an error
+if validation fails, or create a value object upon success.  Some rules for value objects are:
+
+1. Value objects are immutable.
+2. Value objects should validate data that is used to construct them (the "value" they hold after successful validation).
+3. Value objects do not have globally unique identity.
+
+License: MIT
