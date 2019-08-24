@@ -1,8 +1,6 @@
-//! # Database Abstraction Traits
+//! # Domain Driven Design Traits
 //!
-//! This project provides a `Repository` trait and `Entity` trait.  A repository is a collection like abstraction over database
-//! access.  We restrict it's use to that of persisting entities, which are objects that have globally unique and persistent
-//! identities.
+//! This project provides patterns from the world of Domain Driven Design.
 //!
 //! # Repository Trait
 //!
@@ -32,6 +30,7 @@
 //! signature that ensures any `Entity` must have an `id()` method that returns a globally unique id of some kind.
 
 use std::hash::Hash;
+use std::convert::TryFrom;
 
 /// A trait that provides a collection like abstraction over database access.
 ///
@@ -146,17 +145,162 @@ pub trait Entity<K: Hash + Eq> {
     fn id(&self) -> K;
 }
 
+/// A trait that defines a `ValueObject` which is an immutable holder of value, that validates that value
+/// against certain conditions before storing it.
+///
+/// # Example
+/// ```rust
+/// use std::{fmt, error};
+/// use std::convert::TryFrom;
+/// use regex::Regex;
+/// use repository_pattern::ValueObject;
+///
+/// 
+/// #[derive(Clone)]
+/// struct Email {
+///     address: String,
+/// }
+/// 
+/// impl PartialEq for Email {
+///     fn eq(&self, other: &Self) -> bool {
+///         self.address == other.address
+///     }
+/// }
+/// 
+/// #[derive(Debug, Clone)]
+/// struct EmailValidationError;
+/// 
+/// impl fmt::Display for EmailValidationError {
+///     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
+///         write!(f, "Email failed to validate.")
+///     }
+/// }
+/// 
+/// impl error::Error for EmailValidationError {
+///     fn source(&self) -> Option<&(dyn error::Error + 'static)> {
+///         None
+///     }
+/// }
+/// 
+/// impl TryFrom<String> for Email {
+///     type Error = EmailValidationError;
+/// 
+///     fn try_from(value: String) -> Result<Self, Self::Error> {
+///         if !Self::validate(&value) {
+///             return Err(EmailValidationError);
+///         }
+/// 
+///         Ok(Email {
+///             address: value
+///         })
+///     }
+/// }
+/// 
+/// impl ValueObject<String> for Email {
+///     type Error = EmailValidationError;
+/// 
+///     fn validate(value: &String) -> bool {
+///         let email_rx = Regex::new(
+///             r"^(?i)[a-z0-9.!#$%&'*+/=?^_`{|}~-]+@[a-z0-9](?:[a-z0-9-]{0,61}[a-z0-9])?(?:.[a-z0-9](?:[a-z0-9-]{0,61}[a-z0-9])?)*$"
+///         ).unwrap();
+/// 
+///         email_rx.is_match(value)
+///     }
+/// 
+///     fn value(&self) -> &String {
+///         return &self.address;
+///     }
+/// }
+///
+/// let email = Email::try_from("test_email@email.com").unwrap();
+/// ```
+pub trait ValueObject<T>: Clone + PartialEq + TryFrom<T> {
+    /// The implementer of this trait must point this type at some sort of `Error`.  This `Error` should communicate that there was some
+    /// kind of validation error that occurred when trying to create the value object.
+    type Error;
+
+    /// validate takes in incoming data used to construct the value object, and validates it against
+    /// given constraints.  An example would be if we had an `Email` struct that implements `ValueObject`.
+    /// The constraints we would check would ensure that the incoming data is a valid email address.
+    ///
+    /// Note: `validate` should be called by your implementation of `try_from`
+    fn validate(value: &T) -> bool;
+
+    /// value return a reference to the internal value held in the value object. This should be the only
+    /// way that we access the internal data.  Mutation methods should always generate a new value object.
+    fn value(&self) -> &T;
+}
+
 #[cfg(test)]
 mod tests {
     use super::*;
     use std::collections::HashMap;
     use std::{fmt, error};
+    use regex::Regex;
+
+    #[derive(Clone)]
+    struct Email {
+        address: String,
+    }
+
+    impl PartialEq for Email {
+        fn eq(&self, other: &Self) -> bool {
+            self.address == other.address
+        }
+    }
+
+    #[derive(Debug, Clone)]
+    struct EmailValidationError;
+
+    impl fmt::Display for EmailValidationError {
+        fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
+            write!(f, "Email failed to validate.")
+        }
+    }
+
+    impl error::Error for EmailValidationError {
+        fn source(&self) -> Option<&(dyn error::Error + 'static)> {
+            None
+        }
+    }
+
+    impl TryFrom<String> for Email {
+        type Error = EmailValidationError;
+
+        fn try_from(value: String) -> Result<Self, Self::Error> {
+            if !Self::validate(&value) {
+                return Err(EmailValidationError)
+            }
+
+            Ok(Email {
+                address: value
+            })
+        }
+    }
+
+    impl ValueObject<String> for Email {
+        type Error = EmailValidationError;
+
+        fn validate(value: &String) -> bool {
+            let email_rx = Regex::new(
+                r"^(?i)[a-z0-9.!#$%&'*+/=?^_`{|}~-]+@[a-z0-9](?:[a-z0-9-]{0,61}[a-z0-9])?(?:.[a-z0-9](?:[a-z0-9-]{0,61}[a-z0-9])?)*$"
+            ).unwrap();
+
+            email_rx.is_match(value)
+        }
+
+        fn value(&self) -> &String {
+            return &self.address
+        }
+    }
+
+
 
     struct NaiveUser {
         user_id: String,
         first_name: String,
         last_name: String,
-        email: String,
+        email: Email,
     }
 
     impl Entity<String> for NaiveUser {
@@ -285,7 +429,7 @@ mod tests {
             user_id: user_id.clone(),
             first_name: "first_name".to_string(),
             last_name: "test_lname".to_string(),
-            email: "test_email".to_string()
+            email: Email::try_from("test_email@email.com".to_string()).unwrap(),
         };
         let mut user_repo = MockUserRepository::new();
         user_repo.insert(&test_user);
@@ -302,7 +446,7 @@ mod tests {
             user_id: user_id.clone(),
             first_name: "first_name".to_string(),
             last_name: "test_lname".to_string(),
-            email: "test_email".to_string()
+            email: Email::try_from("test_email@email.com".to_string()).unwrap(),
         };
         let mut user_repo = MockUserRepository::new();
         let returned_entity = user_repo.insert(&test_user).unwrap();
@@ -323,7 +467,7 @@ mod tests {
             user_id: user_id.clone(),
             first_name: "first_name".to_string(),
             last_name: "test_lname".to_string(),
-            email: "test_email".to_string()
+            email: Email::try_from("test_email@email.com".to_string()).unwrap(),
         };
         let mut user_repo = MockUserRepository::new();
         let returned_entity = user_repo.insert(&test_user).unwrap();
@@ -350,7 +494,7 @@ mod tests {
             user_id: user_id.clone(),
             first_name: "first_name".to_string(),
             last_name: "test_lname".to_string(),
-            email: "test_email".to_string()
+            email: Email::try_from("test_email@email.com".to_string()).unwrap(),
         };
         let mut user_repo = MockUserRepository::new();
         user_repo.insert(&test_user);
@@ -370,7 +514,7 @@ mod tests {
             user_id: user_id1.clone(),
             first_name: "first_name".to_string(),
             last_name: "test_lname".to_string(),
-            email: "test_email".to_string(),
+            email: Email::try_from("test_email@email.com".to_string()).unwrap(),
         };
 
         let user_id2 = "test_id2".to_string();
@@ -378,7 +522,7 @@ mod tests {
             user_id: user_id2.clone(),
             first_name: "first_name2".to_string(),
             last_name: "test_lname2".to_string(),
-            email: "test_email2".to_string(),
+            email: Email::try_from("test_email@email.com".to_string()).unwrap(),
         };
         let mut user_repo = MockUserRepository::new();
 
