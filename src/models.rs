@@ -13,6 +13,7 @@ use std::hash::Hash;
 ///
 /// struct User {
 ///     user_id: String,
+///     version: i32,
 ///     email: String,
 ///     password: String,
 /// }
@@ -21,12 +22,22 @@ use std::hash::Hash;
 ///     fn id(&self) -> String {
 ///         self.user_id.clone()
 ///     }
+///
+///     fn version(&self) -> i32 {
+///         self.version
+///     }
 /// }
 /// ```
 ///
 /// [`id()`]: ./trait.Entity.html#tymethod.id
 pub trait Entity<K: Hash + Eq> {
+    /// id should be the entities globally unique id.
     fn id(&self) -> K;
+
+    /// version is a simple integers that is incremented for every mutation.
+    /// This allows us to have something like an `EntityCreated` event where we
+    /// can pass versions in, and re-order the events for playback in the correct order.
+    fn version(&self) -> i32;
 }
 
 /// A trait that defines a `ValueObject` which is an immutable holder of value, that validates that value

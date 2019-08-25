@@ -63,14 +63,31 @@ impl ValueObject<String> for Email {
 
 pub struct NaiveUser {
     pub user_id: String,
+    pub version: i32,
     pub first_name: String,
     pub last_name: String,
     pub email: Email,
 }
 
+impl NaiveUser {
+    fn new(user_id: String, first_name: String, last_name: String, email: String) -> Result<NaiveUser, EmailValidationError> {
+        Ok(NaiveUser {
+            user_id,
+            version: 0,
+            first_name,
+            last_name,
+            email: Email::try_from(email)?
+        })
+    }
+}
+
 impl Entity<String> for NaiveUser {
     fn id(&self) -> String {
         return self.user_id.clone()
+    }
+
+    fn version(&self) -> i32 {
+        return self.version
     }
 }
 
@@ -78,6 +95,7 @@ impl Clone for NaiveUser {
     fn clone(&self) -> Self {
         NaiveUser {
             user_id: self.user_id.clone(),
+            version: self.version,
             first_name: self.first_name.clone(),
             last_name: self.last_name.clone(),
             email: self.email.clone(),
@@ -182,11 +200,12 @@ impl Repository<String, NaiveUser> for MockUserRepository {
 }
 
 pub fn create_test_user(user_id: &str) -> NaiveUser {
-    NaiveUser {
-        user_id: user_id.to_string(),
-        first_name: "first_name".to_string(),
-        last_name: "test_lname".to_string(),
-        email: Email::try_from("test_email@email.com".to_string()).unwrap(),
-    }
+    // TODO: Update to return a Result type and pass error back.
+    NaiveUser::new(
+        user_id.to_string(),
+        "first_name".to_string(),
+        "test_lname".to_string(),
+        "test_email@email.com".to_string(),
+    ).unwrap()
 }
 

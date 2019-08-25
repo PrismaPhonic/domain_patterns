@@ -48,3 +48,6 @@ pub mod models;
 /// Collections holds traits that define collection like abstractions. Currently it contains collection like abstractions over
 /// database accesss in the form of the `Repository` pattern.
 pub mod collections;
+
+/// Event module holds the event trait that defines characteristics of all domain events.
+pub mod event;
