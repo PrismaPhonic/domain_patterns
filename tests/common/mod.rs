@@ -162,11 +162,6 @@ impl Repository<String, NaiveUser> for MockUserRepository {
         Ok(result)
     }
 
-    fn contains_key(&self, key: &String) -> Result<bool, Self::Error> {
-        let result = self.data.contains_key(key);
-        Ok(result)
-    }
-
     fn update(&mut self, entity: &NaiveUser) -> Result<Option<NaiveUser>, Self::Error> {
         let key = entity.id();
 

@@ -1,5 +1,6 @@
 use crate::models::Entity;
 use std::hash::Hash;
+use std::error::Error;
 
 /// A trait that provides a collection like abstraction over database access.
 ///
@@ -8,7 +9,7 @@ use std::hash::Hash;
 pub trait Repository<K: Hash + Eq, T: Entity<K>> {
     /// The implementer of this trait must point this type at some sort of `Error`.  This `Error` should communicate that there was some
     /// kind of problem related to communication with the underlying database.
-    type Error;
+    type Error: Error;
 
     /// Inserts an entity into the underlying persistent storage (MySQL, Postgres, Mongo etc.).
     ///
@@ -59,7 +60,9 @@ pub trait Repository<K: Hash + Eq, T: Entity<K>> {
     ///
     /// [`Eq`]: https://doc.rust-lang.org/std/cmp/trait.Eq.html
     /// [`Hash`]: https://doc.rust-lang.org/std/hash/trait.Hash.html
-    fn contains_key(&self, key: &K) -> Result<bool, Self::Error>;
+    fn contains_key(&self, key: &K) -> Result<bool, Self::Error> {
+        Ok(self.get(key)?.is_some())
+    }
 
     /// Updates the entity in the underlying storage mechanism and returns the up to date
     /// entity to the caller.  If the entity does not exist in the database (it's unique
