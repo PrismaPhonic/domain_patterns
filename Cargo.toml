@@ -1,12 +1,12 @@
 [package]
-name = "domain-patterns"
-version = "0.1.0"
+name = "domain_patterns"
+version = "0.1.1"
 authors = ["Peter Farr <Peter@PrismaPhonic.com>"]
 description = "Domain patterns holds patterns from the world of Domain Driven Design."
 keywords = ["domain", "design", "patterns", "database", "architecture"]
 categories = ["database", "data-structures", "rust-patterns"]
 repository = "https://github.com/prismaphonic/domain-patterns"
-documentation = "https://docs.rs/domain-patterns"
+documentation = "https://docs.rs/domain_patterns"
 readme = "README.md"
 license = "MIT"
 edition = "2018"
