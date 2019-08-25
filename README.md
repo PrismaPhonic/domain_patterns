@@ -1,6 +1,6 @@
-[![crates.io](http://meritbadge.herokuapp.com/domain_patterns)](https://crates.io/crates/domain-patterns)
+[![crates.io](http://meritbadge.herokuapp.com/domain_patterns)](https://crates.io/crates/domain_patterns)
 [![MIT licensed](https://img.shields.io/badge/license-MIT-blue.svg)](./LICENSE)
-[![Released API docs](https://docs.rs/domain-patterns/badge.svg)](https://docs.rs/domain-patterns)
+[![Released API docs](https://docs.rs/domain_patterns/badge.svg)](https://docs.rs/domain_patterns)
 
 # Domain Patterns
 
@@ -44,3 +44,5 @@ if validation fails, or create a value object upon success.  Some rules for valu
 1. Value objects are immutable.
 2. Value objects should validate data that is used to construct them (the "value" they hold after successful validation).
 3. Value objects do not have globally unique identity.
+
+License: MIT
