@@ -41,5 +41,10 @@
 //! 2. Value objects should validate data that is used to construct them (the "value" they hold after successful validation).
 //! 3. Value objects do not have globally unique identity.
 
+/// Models is a module that holds traits which define behaviors of various facets of a domain model, such as
+/// traits that define characteristics of entities and value objects.
 pub mod models;
+
+/// Collections holds traits that define collection like abstractions. Currently it contains collection like abstractions over
+/// database accesss in the form of the `Repository` pattern.
 pub mod collections;
