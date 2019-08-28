@@ -39,6 +39,12 @@ pub trait Entity {
     /// This allows us to have something like an `EntityCreated` event where we
     /// can pass versions in, and re-order the events for playback in the correct order.
     fn version(&self) -> u64;
+
+    /// next_version simply returns the current version incremented by 1.  This default implementation
+    /// should never have to be overriden.
+    fn next_version(&self) -> u64 {
+        self.version() + 1
+    }
 }
 
 pub trait AggregateRoot: Entity {
