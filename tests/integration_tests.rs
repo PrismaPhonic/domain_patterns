@@ -1,11 +1,12 @@
 use domain_patterns::collections::*;
-mod common;
+pub mod common;
 use common::*;
+use uuid::Uuid;
 
 #[test]
 #[allow(unused)]
 fn test_add_user() {
-    let user_id = "test_id".to_string();
+    let user_id = Uuid::new_v4();
     let test_user = common::create_test_user(&user_id);
     let mut user_repo = MockUserRepository::new();
     user_repo.insert(&test_user);
@@ -17,7 +18,7 @@ fn test_add_user() {
 #[test]
 #[allow(unused)]
 fn test_cant_add_duplicate() {
-    let user_id = "test_id".to_string();
+    let user_id = Uuid::new_v4();
     let test_user = common::create_test_user(&user_id);
     let mut user_repo = MockUserRepository::new();
     let returned_entity = user_repo.insert(&test_user).unwrap();
@@ -33,7 +34,7 @@ fn test_cant_add_duplicate() {
 #[test]
 #[allow(unused)]
 fn test_update_user() {
-    let user_id = "test_id".to_string();
+    let user_id = Uuid::new_v4();
     let mut test_user = common::create_test_user(&user_id);
     let mut user_repo = MockUserRepository::new();
     let returned_entity = user_repo.insert(&test_user).unwrap();
@@ -55,7 +56,7 @@ fn test_update_user() {
 #[test]
 #[allow(unused)]
 fn test_remove_user() {
-    let user_id = "test_id".to_string();
+    let user_id = Uuid::new_v4();
     let test_user = common::create_test_user(&user_id);
     let mut user_repo = MockUserRepository::new();
     user_repo.insert(&test_user);
@@ -70,10 +71,10 @@ fn test_remove_user() {
 #[test]
 #[allow(unused)]
 fn test_get_paged() {
-    let user_id1 = "test_id1".to_string();
+    let user_id1 = Uuid::new_v4();
     let test_user1 = common::create_test_user(&user_id1);
 
-    let user_id2 = "test_id2".to_string();
+    let user_id2 = Uuid::new_v4();
     let test_user2 = common::create_test_user(&user_id2);
     let mut user_repo = MockUserRepository::new();
 
