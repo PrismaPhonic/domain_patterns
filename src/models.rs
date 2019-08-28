@@ -1,5 +1,6 @@
 use std::convert::TryFrom;
-use std::hash::Hash;
+use std::fmt::Display;
+use uuid::Uuid;
 
 /// A trait that defines an `Entity`, which is any object with a unique and globally persistent identity.
 ///
@@ -9,35 +10,40 @@ use std::hash::Hash;
 ///
 /// # Example
 /// ```rust
-/// use domain_patterns::models::Entity;
+/// use domain_patterns::models::{AggregateRoot, Entity};
 ///
 /// struct User {
-///     user_id: String,
-///     version: i32,
+///     user_id: uuid::Uuid,
+///     version: u64,
 ///     email: String,
 ///     password: String,
 /// }
 ///
-/// impl Entity<String> for User {
-///     fn id(&self) -> String {
+/// impl Entity for User {
+///     fn id(&self) -> uuid::Uuid {
 ///         self.user_id.clone()
 ///     }
 ///
-///     fn version(&self) -> i32 {
+///     fn version(&self) -> u64 {
 ///         self.version
 ///     }
 /// }
 /// ```
 ///
 /// [`id()`]: ./trait.Entity.html#tymethod.id
-pub trait Entity<K: Hash + Eq> {
+pub trait Entity {
     /// id should be the entities globally unique id.
-    fn id(&self) -> K;
+    fn id(&self) -> Uuid;
 
     /// version is a simple integers that is incremented for every mutation.
     /// This allows us to have something like an `EntityCreated` event where we
     /// can pass versions in, and re-order the events for playback in the correct order.
-    fn version(&self) -> i32;
+    fn version(&self) -> u64;
+}
+
+pub trait AggregateRoot: Entity {
+    /// This type alias should point to an enum of events that the aggregate root will create and publish.
+    type Events;
 }
 
 /// A trait that defines a `ValueObject` which is an immutable holder of value, that validates that value
@@ -107,9 +113,15 @@ pub trait Entity<K: Hash + Eq> {
 ///     }
 /// }
 ///
+/// impl fmt::Display for Email {
+///     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
+///         write!(f, "{}", self.address)
+///     }
+/// }
+///
 /// let email = Email::try_from("test_email@email.com".to_string()).unwrap();
 /// ```
-pub trait ValueObject<T>: Clone + PartialEq + TryFrom<T> {
+pub trait ValueObject<T>: Clone + PartialEq + TryFrom<T> + Display {
     /// The implementer of this trait must point this type at some sort of `Error`.  This `Error` should communicate that there was some
     /// kind of validation error that occurred when trying to create the value object.
     type Error;
