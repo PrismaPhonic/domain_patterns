@@ -1,6 +1,6 @@
 use std::collections::HashMap;
 use domain_patterns::models::{ValueObject, AggregateRoot, Entity};
-use domain_patterns::event::DomainEvent;
+use domain_patterns::event::{DomainEvent, EventStorer, DomainEvents};
 use domain_patterns::collections::Repository;
 use std::{fmt, error};
 use regex::Regex;
@@ -12,29 +12,21 @@ use uuid::Uuid;
 
 
 
-/// Based on examples I've found we have duplicate data.  This is presumably so `event_data` can be worked
-/// on directly, and we have data that will become directly accessible as sql fields.  not sure if this makes
-/// the most sense actually.
-///
-/// id is aggregate id.
-//pub struct EventRecord {
-//    pub id: String,
-//    pub version: u64,
-//    pub event_data: dyn DomainEvent<String>,
-//}
+// This is a simple example of the struct that matches the database rows events will be stored into.
+// Some data from event_data is denormalized into rows for easy querying.
+pub struct EventRecord<T: DomainEvents> {
+    pub id: Uuid,
+    pub version: u64,
+    pub event_data: T,
+}
 
-//impl EventRecord {
-//    fn new(event: Box<dyn DomainEvent>) -> EventRecord {
-//        EventRecord {
-//            id: event.id(),
-//            version: event.version(),
-//            event_data: event,
-//        }
+//impl<T: DomainEvents> From<EventRecord<T>> for T {
+//    fn from(events: EventRecord<T>) -> Self {
+//        events.event_data
 //    }
 //}
 
-
-#[derive(Serialize, Deserialize)]
+#[derive(Serialize, Deserialize, Clone)]
 pub struct UserCreatedEvent {
     pub user_id: Uuid,
     pub first_name: String,
@@ -46,11 +38,11 @@ pub struct UserCreatedEvent {
 }
 
 impl UserCreatedEvent {
-    fn new(user: NaiveUser) -> UserCreatedEvent {
+    fn new(user: &NaiveUser) -> UserCreatedEvent {
         UserCreatedEvent {
             user_id: user.user_id,
-            first_name: user.first_name,
-            last_name: user.last_name,
+            first_name: user.first_name.clone(),
+            last_name: user.last_name.clone(),
             email: user.email.to_string(),
             version: user.version,
             id: Uuid::new_v4(),
@@ -59,7 +51,10 @@ impl UserCreatedEvent {
     }
 }
 
-#[derive(Serialize, Deserialize)]
+// Only making clonable for test case because we don't have a real backing database for events,
+// and need to easily clone the events so we keep them in our backing hashmap and return owned
+// copies back, since we will be returning owned copies when dealing with an actual datastore.
+#[derive(Serialize, Deserialize, Clone)]
 pub struct FirstNameUpdatedEvent {
     pub user_id: Uuid,
     pub first_name: String,
@@ -116,58 +111,67 @@ impl FirstNameUpdatedEvent {
     }
 }
 
+#[derive(Clone)]
 pub enum UserEvents {
     UserCreatedEvent,
     FirstNameUpdatedEvent,
 }
-//
-//pub struct EventStore
-//{
-//    pub store: Vec<EventRecord>,
-//}
-//
-//impl EventStorer<String> for EventStore {
-//    /// events_by_aggregate returns a vector of pointers to events filtered by the supplied
-//    /// aggregate id.
-//    fn events_by_aggregate(&self, aggregate_id: &String) -> Vec<Box<dyn DomainEvent>> {
-//        self.store.into_iter().filter(|e|{
-//            &e.id == aggregate_id
-//        }).collect()
-//    }
-//
-//    /// events_since_version will give the caller all the events that have occurred for the given
-//    /// aggregate id since the version number supplied.
-//    fn events_since_version(&self, aggregate_id: &String, version: u64) -> Vec<Box<dyn DomainEvent>> {
-//        let mut events: Vec<Box<dyn DomainEvent>> = self.store.into_iter().filter(|e|{
-//            &e.id == aggregate_id && e.version > version
-//        })
-//            .map(|e| { e.event_data })
-//            .collect();
-//
-//        events.sort_by(|a, b| a.version().cmp(&b.version()));
-//
-//        events
-//    }
-//
-//    // num_events_since_version provides a vector of events of a length equal to the supplied `num_events`
-//    // integer, starting from version + 1, and going up to version + num_events in sequential order.
-//    //
-//    // Used for re-hydrating aggregates, where the aggregate root can ask for chunks of events that occurred
-//    // after it's current version number.
-//    fn num_events_since_version(&self, aggregate_id: &String, version: u64, num_events: u64) -> Vec<Box<dyn DomainEvent>> {
-//        let mut events: Vec<Box<dyn DomainEvent>> = self.store.into_iter().filter(|e|{
-//            &e.id == aggregate_id &&
-//                e.version > version &&
-//                e.version <= version + num_events
-//        })
-//            .map(|e| { e.event_data })
-//            .collect();
-//
-//        events.sort_by(|a, b| a.version().cmp(&b.version()));
-//
-//        events
-//    }
-//}
+
+impl DomainEvents for UserEvents {}
+
+pub struct EventStore<T: DomainEvents>
+{
+    pub store: Vec<EventRecord<T>>,
+}
+
+impl<T: DomainEvents + Clone> EventStore<T> {
+    // helper method for mock tests
+    fn records_to_events(records: &Vec<&EventRecord<T>>) -> Vec<T> {
+        records.into_iter().map(|er| { er.event_data.clone() }).collect()
+    }
+}
+
+// An implementation that requires Clone, on a real project probably not necessary to have events
+// be clonable
+impl<T: DomainEvents + Clone> EventStorer for EventStore<T> {
+    type Events = T;
+    fn events_by_aggregate(&self, aggregate_id: &Uuid) -> Vec<Self::Events> {
+        self.store.iter()
+            .filter(|e|{
+            &e.id == aggregate_id
+        })
+            .map(|e| {
+                e.event_data.clone()
+            })
+            .collect()
+    }
+
+    fn events_since_version(&self, aggregate_id: &Uuid, version: u64) -> Vec<Self::Events> {
+        // collecting into a vector so we can sort (can't sort iterators) by versions.
+        let mut ev_records: Vec<&EventRecord<T>> = self.store.iter()
+            .filter(|e|{
+            &e.id == aggregate_id && e.version > version
+        })
+            .collect();
+
+        ev_records.sort_by(|a, b| a.version.cmp(&b.version));
+
+        Self::records_to_events(&ev_records)
+    }
+
+    fn num_events_since_version(&self, aggregate_id: &Uuid, version: u64, num_events: u64) -> Vec<Self::Events> {
+        let mut ev_records: Vec<&EventRecord<T>> = self.store.iter().filter(|e|{
+            &e.id == aggregate_id &&
+                e.version > version &&
+                e.version <= version + num_events
+        })
+            .collect();
+
+        ev_records.sort_by(|a, b| a.version.cmp(&b.version));
+
+        Self::records_to_events(&ev_records)
+    }
+}
 
 #[derive(Clone)]
 pub struct Email {
@@ -232,15 +236,15 @@ impl ValueObject<String> for Email {
 }
 
 pub struct NaiveUser {
-    pub user_id: Uuid,
-    pub version: u64,
-    pub first_name: String,
-    pub last_name: String,
-    pub email: Email,
+    user_id: Uuid,
+    version: u64,
+    first_name: String,
+    last_name: String,
+    email: Email,
 }
 
 impl NaiveUser {
-    fn new(user_id: Uuid, first_name: String, last_name: String, email: String) -> Result<NaiveUser, EmailValidationError> {
+    pub fn new(user_id: Uuid, first_name: String, last_name: String, email: String) -> Result<NaiveUser, EmailValidationError> {
         Ok(NaiveUser {
             user_id,
             version: 0,
@@ -248,6 +252,27 @@ impl NaiveUser {
             last_name,
             email: Email::try_from(email)?
         })
+    }
+
+    pub fn change_fname(&mut self, new_fname: String) {
+        self.first_name = new_fname;
+        self.version = self.next_version();
+        let created_event = UserCreatedEvent::new(self);
+        // would publish event here - maybe create a mock bus for demonstration purposes.
+    }
+
+    // following getters are to replicate pattern common in many OOP language with private setters
+    // and public getters.
+    pub fn first_name(&self) -> &String {
+        &self.first_name
+    }
+
+    pub fn last_name(&self) -> &String {
+        &self.last_name
+    }
+
+    pub fn email(&self) -> &Email {
+        &self.email
     }
 }
 
