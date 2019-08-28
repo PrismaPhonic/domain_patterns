@@ -12,7 +12,7 @@ fn test_add_user() {
     user_repo.insert(&test_user);
     let success_result = user_repo.get(&user_id).unwrap();
 
-    assert_eq!(&success_result.unwrap().first_name, &test_user.first_name)
+    assert_eq!(&success_result.unwrap().first_name(), &test_user.first_name())
 }
 
 #[test]
@@ -25,7 +25,7 @@ fn test_cant_add_duplicate() {
     assert!(returned_entity.is_some());
 
     let success_result = user_repo.get(&user_id).unwrap();
-    assert_eq!(&success_result.unwrap().first_name, &test_user.first_name);
+    assert_eq!(&success_result.unwrap().first_name(), &test_user.first_name());
 
     let failure_result = user_repo.insert(&test_user).unwrap();
     assert!(failure_result.is_none());
@@ -41,16 +41,16 @@ fn test_update_user() {
     assert!(returned_entity.is_some());
 
     let updated_name = "new_name".to_string();
-    test_user.first_name = updated_name.clone();
+    test_user.change_fname(updated_name.clone());
     let mut updated_user = user_repo.update(&test_user).unwrap();
     // check that we get back Some() which implies updating worked.
     assert!(returned_entity.is_some());
     // Check that our name is correct in the returned (updated) user.
-    assert_eq!(&updated_user.unwrap().first_name, &updated_name);
+    assert_eq!(updated_user.unwrap().first_name(), &updated_name);
 
     // sanity check with fresh get and check that name was updated;
     updated_user = user_repo.get(&user_id).unwrap();
-    assert_eq!(&updated_user.unwrap().first_name, &updated_name);
+    assert_eq!(updated_user.unwrap().first_name(), &updated_name);
 }
 
 #[test]
