@@ -1,12 +1,12 @@
-use crate::models::Entity;
-use std::hash::Hash;
+use crate::models::AggregateRoot;
 use std::error::Error;
+use uuid::Uuid;
 
 /// A trait that provides a collection like abstraction over database access.
 ///
 /// Generic `T` is some struct that implements `Entity<K>` where `K` is used as the key in the repository methods.  In other words
 /// it's expected that an entities id is used as the key for insert and retrieval.
-pub trait Repository<K: Hash + Eq, T: Entity<K>> {
+pub trait Repository<T: AggregateRoot> {
     /// The implementer of this trait must point this type at some sort of `Error`.  This `Error` should communicate that there was some
     /// kind of problem related to communication with the underlying database.
     type Error: Error;
@@ -40,7 +40,7 @@ pub trait Repository<K: Hash + Eq, T: Entity<K>> {
     ///
     /// [`Eq`]: https://doc.rust-lang.org/std/cmp/trait.Eq.html
     /// [`Hash`]: https://doc.rust-lang.org/std/hash/trait.Hash.html
-    fn get(&self, key: &K) -> Result<Option<T>, Self::Error>;
+    fn get(&self, key: &Uuid) -> Result<Option<T>, Self::Error>;
 
 
     /// Returns a `Vec<T>` of entities, based on the supplied `page_num` and `page_size`.
@@ -60,7 +60,7 @@ pub trait Repository<K: Hash + Eq, T: Entity<K>> {
     ///
     /// [`Eq`]: https://doc.rust-lang.org/std/cmp/trait.Eq.html
     /// [`Hash`]: https://doc.rust-lang.org/std/hash/trait.Hash.html
-    fn contains_key(&self, key: &K) -> Result<bool, Self::Error> {
+    fn contains_key(&self, key: &Uuid) -> Result<bool, Self::Error> {
         Ok(self.get(key)?.is_some())
     }
 
@@ -86,5 +86,5 @@ pub trait Repository<K: Hash + Eq, T: Entity<K>> {
     /// [`None`]: https://doc.rust-lang.org/std/option/enum.Option.html#variant.None
     /// [`Eq`]: https://doc.rust-lang.org/std/cmp/trait.Eq.html
     /// [`Hash`]: https://doc.rust-lang.org/std/hash/trait.Hash.html
-    fn remove(&mut self, key: &K) -> Result<Option<T>, Self::Error>;
+    fn remove(&mut self, key: &Uuid) -> Result<Option<T>, Self::Error>;
 }
