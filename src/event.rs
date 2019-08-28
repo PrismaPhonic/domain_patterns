@@ -25,6 +25,12 @@ pub trait DomainEvent: Serialize {
     fn version(&self) -> u64;
 }
 
+/// DomainEvents is a thin wrapper over an enum that contains all generics that implement `DomainEvent` trait.
+/// As far as I can tell there's no way to constrain that all variants of an enum enforce the same trait.
+///
+/// Note: This should be implemented by the AggregateRoot.
+pub trait DomainEvents {}
+
 // TODO: Change from Entity to Aggregate after creating Aggregate trait.
 // Note #1: This is highly subject to change.  Not suggested for public consumption yet.
 // Note #2: Treat this like a repository interface for events per resource.  For instance, an
@@ -32,22 +38,22 @@ pub trait DomainEvent: Serialize {
 // a user aggregate from an event stream.
 //
 // Note #3: The implementor should hold a function for type casting event data to correct event type.
-pub trait EventStorer<T: AggregateRoot>
-{
+pub trait EventStorer {
+    type Events: DomainEvents;
     /// events_by_aggregate returns a vector of pointers to events filtered by the supplied
     /// aggregate id.
-    fn events_by_aggregate(&self, aggregate_id: &Uuid) -> Vec<T::Events>;
+    fn events_by_aggregate(&self, aggregate_id: &Uuid) -> Vec<Self::Events>;
 
     /// events_since_version will give the caller all the events that have occurred for the given
     /// aggregate id since the version number supplied.
-    fn events_since_version(&self, aggregate_id: &Uuid, version: u64) -> Vec<T::Events>;
+    fn events_since_version(&self, aggregate_id: &Uuid, version: u64) -> Vec<Self::Events>;
 
     // num_events_since_version provides a vector of events of a length equal to the supplied `num_events`
     // integer, starting from version + 1, and going up to version + num_events in sequential order.
     //
     // Used for re-hydrating aggregates, where the aggregate root can ask for chunks of events that occurred
     // after it's current version number.
-    fn num_events_since_version(&self, aggregate_id: &Uuid, version: u64, num_events: u64) -> Vec<T::Events>;
+    fn num_events_since_version(&self, aggregate_id: &Uuid, version: u64, num_events: u64) -> Vec<Self::Events>;
 }
 
 //// EventApplier should be applied only to aggregate roots in systems where you want to use event sourcing.
