@@ -1,4 +1,3 @@
-use serde::Serialize;
 use crate::models::AggregateRoot;
 use uuid::Uuid;
 
@@ -7,7 +6,7 @@ use uuid::Uuid;
 /// and an id that corresponds to which aggregate id the event corresponds to.  The implementor
 /// should also be sure to pass the aggregates `version` in when they create the event, so that
 /// events can be processed in the correct order.
-pub trait DomainEvent: Serialize {
+pub trait DomainEvent {
     /// occurred should return a timestamp as an i64.  You can generate this using a library like chrono
     /// for the current time.
     fn occurred(&self) -> i64;
