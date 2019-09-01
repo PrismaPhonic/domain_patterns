@@ -1,6 +1,7 @@
 use std::convert::TryFrom;
 use std::fmt::Display;
 use uuid::Uuid;
+use crate::event::DomainEvents;
 
 /// A trait that defines an `Entity`, which is any object with a unique and globally persistent identity.
 ///
@@ -49,7 +50,7 @@ pub trait Entity {
 
 pub trait AggregateRoot: Entity {
     /// This type alias should point to an enum of events that the aggregate root will create and publish.
-    type Events;
+    type Events: DomainEvents;
 }
 
 /// A trait that defines a `ValueObject` which is an immutable holder of value, that validates that value
