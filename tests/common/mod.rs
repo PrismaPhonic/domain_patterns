@@ -108,8 +108,8 @@ impl FirstNameUpdatedEvent {
 
 #[derive(Clone)]
 pub enum UserEvents {
-    Created(UserCreatedEvent),
-    Updated(FirstNameUpdatedEvent),
+    UserCreated(UserCreatedEvent),
+    FirstNameUpdated(FirstNameUpdatedEvent),
 }
 
 /// Note: This seems really dumb that we have to do this, but currently it seems like due to language
@@ -118,20 +118,20 @@ impl From<&UserEvents> for UserEventRecord {
     fn from(value: &UserEvents) -> Self {
         use UserEvents::*;
         match value {
-            Created(e) => {
+            UserCreated(e) => {
                 UserEventRecord {
                     id: e.id().clone(),
                     aggregate_id: e.aggregate_id().clone(),
                     version: e.version(),
-                    event_data: Created(e.clone()),
+                    event_data: UserCreated(e.clone()),
                 }
             },
-            Updated(e) => {
+            FirstNameUpdated(e) => {
                 UserEventRecord {
                     id: e.id().clone(),
                     aggregate_id: e.aggregate_id().clone(),
                     version: e.version(),
-                    event_data: Updated(e.clone()),
+                    event_data: FirstNameUpdated(e.clone()),
                 }
             }
         }
@@ -325,7 +325,7 @@ impl NaiveUser {
     pub fn change_fname(&mut self, new_fname: String) {
         self.first_name = new_fname;
         self.version = self.next_version();
-        let created_event = UserCreatedEvent::new(self);
+        let _created_event = UserCreatedEvent::new(self);
         // would publish event here - maybe create a mock bus for demonstration purposes.
     }
 
