@@ -37,9 +37,6 @@ pub trait Repository<T: AggregateRoot> {
     /// # Failure case
     ///
     /// If we fail to communicate with the underlying storage, then an error is returned.
-    ///
-    /// [`Eq`]: https://doc.rust-lang.org/std/cmp/trait.Eq.html
-    /// [`Hash`]: https://doc.rust-lang.org/std/hash/trait.Hash.html
     fn get(&self, key: &Uuid) -> Result<Option<T>, Self::Error>;
 
 
