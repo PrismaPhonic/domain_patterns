@@ -31,9 +31,9 @@ pub trait DomainEvent: Serialize {
 /// Note: This should be implemented on an enum once for every aggregate root.
 pub trait DomainEvents {}
 
-//// EventApplier should be applied only to aggregate roots in systems where you want to use event sourcing.
-//pub trait EventApplier<T: DomainEvent>: AggregateRoot {
-//    type Error;
-//
-//    fn apply(event: T) -> Result<(), Self::Error>;
-//}
+// EventApplier should be applied only to aggregate roots in systems where you want to use event sourcing.
+pub trait EventApplier: AggregateRoot {
+    type EventError;
+
+    fn apply(&mut self, event: Self::Events) -> Result<(), Self::EventError>;
+}
