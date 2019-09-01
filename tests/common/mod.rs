@@ -1,6 +1,6 @@
 use std::collections::HashMap;
 use domain_patterns::models::{ValueObject, AggregateRoot, Entity};
-use domain_patterns::event::{DomainEvent, EventStorer, DomainEvents};
+use domain_patterns::event::{DomainEvent, EventRepository, DomainEvents};
 use domain_patterns::collections::Repository;
 use std::{fmt, error};
 use regex::Regex;
@@ -14,17 +14,12 @@ use uuid::Uuid;
 
 // This is a simple example of the struct that matches the database rows events will be stored into.
 // Some data from event_data is denormalized into rows for easy querying.
-pub struct EventRecord<T: DomainEvents> {
+pub struct UserEventRecord {
     pub id: Uuid,
+    pub aggregate_id: Uuid,
     pub version: u64,
-    pub event_data: T,
+    pub event_data: UserEvents,
 }
-
-//impl<T: DomainEvents> From<EventRecord<T>> for T {
-//    fn from(events: EventRecord<T>) -> Self {
-//        events.event_data
-//    }
-//}
 
 #[derive(Serialize, Deserialize, Clone)]
 pub struct UserCreatedEvent {
@@ -38,7 +33,7 @@ pub struct UserCreatedEvent {
 }
 
 impl UserCreatedEvent {
-    fn new(user: &NaiveUser) -> UserCreatedEvent {
+    pub fn new(user: &NaiveUser) -> UserCreatedEvent {
         UserCreatedEvent {
             user_id: user.user_id,
             first_name: user.first_name.clone(),
@@ -100,10 +95,10 @@ impl DomainEvent for FirstNameUpdatedEvent {
 }
 
 impl FirstNameUpdatedEvent {
-    fn new(user: NaiveUser) -> FirstNameUpdatedEvent {
+    fn new(user: &NaiveUser) -> FirstNameUpdatedEvent {
         FirstNameUpdatedEvent {
             user_id: user.user_id,
-            first_name: user.first_name,
+            first_name: user.first_name.clone(),
             version: user.version,
             id: Uuid::new_v4(),
             occurred: Utc::now().timestamp(),
@@ -113,63 +108,136 @@ impl FirstNameUpdatedEvent {
 
 #[derive(Clone)]
 pub enum UserEvents {
-    UserCreatedEvent,
-    FirstNameUpdatedEvent,
+    Created(UserCreatedEvent),
+    Updated(FirstNameUpdatedEvent),
+}
+
+/// Note: This seems really dumb that we have to do this, but currently it seems like due to language
+/// limitations regarding runtime inspection this might be the only way.
+impl From<&UserEvents> for UserEventRecord {
+    fn from(value: &UserEvents) -> Self {
+        use UserEvents::*;
+        match value {
+            Created(e) => {
+                UserEventRecord {
+                    id: e.id().clone(),
+                    aggregate_id: e.aggregate_id().clone(),
+                    version: e.version(),
+                    event_data: Created(e.clone()),
+                }
+            },
+            Updated(e) => {
+                UserEventRecord {
+                    id: e.id().clone(),
+                    aggregate_id: e.aggregate_id().clone(),
+                    version: e.version(),
+                    event_data: Updated(e.clone()),
+                }
+            }
+        }
+    }
 }
 
 impl DomainEvents for UserEvents {}
 
-pub struct EventStore<T: DomainEvents>
-{
-    pub store: Vec<EventRecord<T>>,
+/// Hashmap key in this case is aggregate id.
+pub struct UserEventRepository {
+    store: HashMap<Uuid, Vec<UserEventRecord>>,
 }
 
-impl<T: DomainEvents + Clone> EventStore<T> {
+impl UserEventRepository {
+    pub fn new() -> UserEventRepository {
+        let store: HashMap<Uuid, Vec<UserEventRecord>> = HashMap::new();
+        UserEventRepository {
+            store,
+        }
+    }
     // helper method for mock tests
-    fn records_to_events(records: &Vec<&EventRecord<T>>) -> Vec<T> {
-        records.into_iter().map(|er| { er.event_data.clone() }).collect()
+    fn records_to_events (records: &Vec<&UserEventRecord>) -> Vec<UserEvents> {
+        records.into_iter()
+            .map(|er| {
+                er.event_data.clone()
+            })
+            .collect()
     }
 }
 
 // An implementation that requires Clone, on a real project probably not necessary to have events
 // be clonable
-impl<T: DomainEvents + Clone> EventStorer for EventStore<T> {
-    type Events = T;
-    fn events_by_aggregate(&self, aggregate_id: &Uuid) -> Vec<Self::Events> {
-        self.store.iter()
-            .filter(|e|{
-            &e.id == aggregate_id
-        })
-            .map(|e| {
-                e.event_data.clone()
-            })
-            .collect()
+impl EventRepository for UserEventRepository {
+    type Events = UserEvents;
+
+    fn events_by_aggregate(&self, aggregate_id: &Uuid) -> Option<Vec<Self::Events>> {
+        if let Some(events) = self.store.get(aggregate_id) {
+            let events: Vec<Self::Events> = events.iter().map(|e| { e.event_data.clone() }).collect();
+            return Some(events);
+        }
+        None
     }
 
-    fn events_since_version(&self, aggregate_id: &Uuid, version: u64) -> Vec<Self::Events> {
-        // collecting into a vector so we can sort (can't sort iterators) by versions.
-        let mut ev_records: Vec<&EventRecord<T>> = self.store.iter()
-            .filter(|e|{
-            &e.id == aggregate_id && e.version > version
-        })
-            .collect();
+    fn events_since_version(&self, aggregate_id: &Uuid, version: u64) -> Option<Vec<Self::Events>> {
+        if let Some(records) = self.store.get(aggregate_id) {
+            let mut filtered_records: Vec<&UserEventRecord> = records
+                .iter()
+                .filter(|e| {
+                    e.version > version
+                })
+                .collect();
 
-        ev_records.sort_by(|a, b| a.version.cmp(&b.version));
+            filtered_records.sort_by(|a, b| a.version.cmp(&b.version));
 
-        Self::records_to_events(&ev_records)
+            return Some(Self::records_to_events(&filtered_records));
+        }
+
+        None
     }
 
-    fn num_events_since_version(&self, aggregate_id: &Uuid, version: u64, num_events: u64) -> Vec<Self::Events> {
-        let mut ev_records: Vec<&EventRecord<T>> = self.store.iter().filter(|e|{
-            &e.id == aggregate_id &&
-                e.version > version &&
-                e.version <= version + num_events
-        })
-            .collect();
+    fn num_events_since_version(&self, aggregate_id: &Uuid, version: u64, num_events: u64) -> Option<Vec<Self::Events>> {
+        if let Some(records) = self.store.get(aggregate_id) {
+            let mut filtered_records: Vec<&UserEventRecord> = records
+                .iter()
+                .filter(|e| {
+                    e.version > version &&
+                    e.version > version &&
+                        e.version <= version + num_events
+                })
+                .collect();
 
-        ev_records.sort_by(|a, b| a.version.cmp(&b.version));
+            filtered_records.sort_by(|a, b| a.version.cmp(&b.version));
 
-        Self::records_to_events(&ev_records)
+            return Some(Self::records_to_events(&filtered_records));
+        }
+
+        None
+    }
+
+    /// retrieves by event id.
+    fn get(&self, event_id: &Uuid) -> Option<Self::Events> {
+        let maybe_record = self.store.iter().find_map(|(_, records)| {
+            records.iter().find(|record| { record.id == *event_id })
+        });
+        if let Some(record) = maybe_record {
+            return Some(record.event_data.clone());
+        }
+        None
+    }
+
+    fn contains_aggregate(&self, aggregate_id: &Uuid) -> bool {
+        self.store.contains_key(aggregate_id)
+    }
+
+    fn insert(&mut self, event: &UserEvents) -> Option<Self::Events> {
+        let ev_record = UserEventRecord::from(event);
+        if self.contains_event(&ev_record.id) {
+            None
+        } else {
+            if self.contains_aggregate(&ev_record.aggregate_id) {
+                self.store.entry(ev_record.aggregate_id).and_modify(|e| e.push(ev_record));
+            } else {
+                self.store.insert(ev_record.aggregate_id, vec!(ev_record));
+            }
+            Some(event.clone())
+        }
     }
 }
 
@@ -304,7 +372,7 @@ impl Clone for NaiveUser {
 
 // for naive testing
 pub struct MockUserRepository {
-    pub data: HashMap<Uuid, NaiveUser>
+    data: HashMap<Uuid, NaiveUser>
 }
 
 impl MockUserRepository {
