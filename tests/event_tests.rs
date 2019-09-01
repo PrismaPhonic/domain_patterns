@@ -3,7 +3,7 @@ pub mod common;
 use common::*;
 use uuid::Uuid;
 use crate::common::UserEvents::Created;
-use domain_patterns::event::{EventRepository, DomainEvent};
+use domain_patterns::event::DomainEvent;
 
 #[test]
 #[allow(unused)]

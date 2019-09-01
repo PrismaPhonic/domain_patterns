@@ -1,7 +1,7 @@
 use std::collections::HashMap;
 use domain_patterns::models::{ValueObject, AggregateRoot, Entity};
-use domain_patterns::event::{DomainEvent, EventRepository, DomainEvents};
-use domain_patterns::collections::Repository;
+use domain_patterns::event::{DomainEvent, DomainEvents};
+use domain_patterns::collections::{Repository, EventRepository};
 use std::{fmt, error};
 use regex::Regex;
 use std::convert::TryFrom;
