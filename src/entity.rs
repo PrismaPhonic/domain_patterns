@@ -1,5 +1,9 @@
 use syn::{DeriveInput, Data, Field, Path, Error};
 
+/// `precondition` checks all invariants for the Struct structure that the macro is being applied to.
+/// The following conditions must be true:
+/// 1. There needs to be an `id` field of type `Uuid`.
+/// 2. There needs to be a version field of any integer type (floating point not allowed).
 pub fn precondition(input: &DeriveInput) -> Result<(), syn::Error> {
     check_id_field(input)?;
     check_version_field(input)?;
