@@ -2,7 +2,7 @@
 extern crate domain_derive;
 
 use domain_patterns::models::{Entity, ValueObject};
-use domain_patterns::event::DomainEvent;
+use domain_patterns::event::{DomainEvent,DomainEvents};
 use serde::{Serialize, Deserialize};
 use uuid::Uuid;
 use std::convert::TryFrom;
@@ -50,6 +50,15 @@ pub struct FirstNameUpdatedEvent {
     pub id: Uuid,
     pub occurred: i64,
 }
+
+#[derive(Clone, DomainEvents)]
+pub enum UserEvents {
+    FirstNameUpdated(FirstNameUpdatedEvent),
+}
+
+//// UNCOMMENT THIS TO CHECK FOR COMPILE TIME FAILIURE.
+//#[derive(DomainEvents)]
+//pub struct NotEvents {}
 
 #[test]
 fn entity_macro_works() {
