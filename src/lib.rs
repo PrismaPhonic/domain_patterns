@@ -29,7 +29,11 @@
 //!
 //! Once you've used this macro, you will still need to implement the `ValueObject` trait,
 //! but you will not have to implement `TryFrom` (or create the validation error for `TryFrom`, this
-//! is handled by the macro), or implement `PartialEq` or `Clone`
+//! is handled by the macro), or implement `PartialEq` or `Clone`.
+//!
+//! In case you need to use the validation error elsewhere, the created validation error will be the
+//! name of your struct with ValidationError appended.  For example, if you have an `Email` struct,
+//! then the generated validation error will be called `EmailValidationError`.
 //!
 //! ```edition2018
 //! #[macro_use]
@@ -69,6 +73,7 @@ extern crate syn;
 mod entity;
 mod value_object;
 mod domain_event;
+mod domain_events;
 mod type_checks;
 
 use crate::proc_macro::TokenStream;
@@ -105,6 +110,7 @@ pub fn value_object_derive(input: TokenStream) -> TokenStream {
 
     // Struct name
     let name = &input.ident;
+    let name_str = name.to_string();
 
     value_object::precondition(&input).expect("ValueSetup macro failed preconditions");
 
@@ -139,7 +145,7 @@ pub fn value_object_derive(input: TokenStream) -> TokenStream {
 
         impl std::fmt::Display for #error_struct_name {
             fn fmt(&self, f: &mut std::fmt::Formatter) -> std::fmt::Result {
-                write!(f, "{} failed to validate.", #name)
+                write!(f, "{} failed to validate.", #name_str)
             }
         }
 
@@ -198,3 +204,19 @@ pub fn domain_event_derive(input: TokenStream) -> TokenStream {
 
     TokenStream::from(expanded)
 }
+
+//#[proc_macro_derive(DomainEvents)]
+//pub fn domain_events_derive(input: TokenStream) -> TokenStream {
+//    let input: DeriveInput = parse_macro_input!(input as DeriveInput);
+//
+//    // Struct name
+//    let name = &input.ident;
+//
+//    domain_events::precondition(&input).expect("DomainEvents macro failed preconditions");
+//
+//    let expanded = quote! {
+//        impl DomainEvents for #name {}
+//    };
+//
+//    TokenStream::from(expanded)
+//}
