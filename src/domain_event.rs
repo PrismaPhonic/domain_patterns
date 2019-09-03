@@ -1,4 +1,5 @@
 use syn::{DeriveInput, Data, Field, Path, Error};
+use crate::type_checks::*;
 
 /// `precondition` checks all invariants for the Struct structure that the macro is being applied to.
 /// The following conditions must be true:
@@ -94,53 +95,6 @@ fn has_version_field(data: &Data) -> bool {
                 f.clone().ident.unwrap() == "version"
                     && is_int_type(f)
             })
-        },
-        _ => false,
-    }
-}
-
-fn is_int_type(field: &Field) -> bool {
-    fn path_is_int(path: &Path) -> bool {
-        let path_str = path.segments.iter().next().unwrap().ident.to_string();
-        &path_str == "u128"
-            || &path_str == "u64"
-            || &path_str == "u32"
-            || &path_str == "u16"
-            || &path_str == "u8"
-            || &path_str == "i128"
-            || &path_str == "i64"
-            || &path_str == "i32"
-            || &path_str == "i16"
-            || &path_str == "i8"
-    }
-    match &field.ty {
-        syn::Type::Path(type_path) if path_is_int(&type_path.path) => {
-            true
-        },
-        _ => false,
-    }
-}
-
-fn is_timestamp_type(field: &Field) -> bool {
-    fn path_is_i64(path: &Path) -> bool {
-        let path_str = path.segments.iter().next().unwrap().ident.to_string();
-        &path_str == "u64"
-    }
-    match &field.ty {
-        syn::Type::Path(type_path) if path_is_i64(&type_path.path) => {
-            true
-        },
-        _ => false,
-    }
-}
-
-fn is_uuid_type(field: &Field) -> bool {
-    fn path_is_uuid(path: &Path) -> bool {
-        path.segments.iter().next().unwrap().ident.to_string().to_lowercase().contains("uuid")
-    }
-    match &field.ty {
-        syn::Type::Path(type_path) if path_is_uuid(&type_path.path) => {
-            true
         },
         _ => false,
     }
