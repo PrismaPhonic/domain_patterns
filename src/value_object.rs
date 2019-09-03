@@ -1,4 +1,4 @@
-use syn::{DeriveInput, Data, Field, Error, TypePath};
+use syn::{DeriveInput, Data, Error};
 use syn::Ident;
 use syn::export::Span;
 

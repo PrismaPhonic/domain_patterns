@@ -2,7 +2,6 @@
 extern crate domain_derive;
 
 use domain_patterns::models::{Entity, ValueObject};
-use std::{fmt, error};
 use uuid::Uuid;
 use std::convert::TryFrom;
 use regex::Regex;
@@ -22,7 +21,7 @@ impl NaiveUser {
     }
 }
 
-#[derive(PartialEq, Clone, ValueSetup)]
+#[derive(ValueSetup)]
 pub struct Email {
     pub value: String,
 }

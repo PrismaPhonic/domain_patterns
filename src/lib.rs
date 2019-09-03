@@ -19,6 +19,44 @@
 //!     version: u64
 //! };
 //! ```
+//!
+//! # ValueSetup macro
+//! The `ValueSetup` derive macro can be used to setup as much boilerplate as possible
+//! for your choosen value object.  It checks some preconditions:
+//!
+//! 1. You are applying this to a struct.
+//! 2. Your struct has a single field called `value` of any type that is clonable.
+//!
+//! Once you've used this macro, you will still need to implement the `ValueObject` trait,
+//! but you will not have to implement `TryFrom` (or create the validation error for `TryFrom`, this
+//! is handled by the macro), or implement `PartialEq` or `Clone`
+//!
+//! ```edition2018
+//! #[macro_use]
+//! extern crate domain_derive;
+//!
+//! use domain_patterns::ValueObject;
+//! use regex::Regex;
+//!
+//! #[derive(ValueSetup)]
+//! pub struct Email {
+//!     pub value: String,
+//! }
+//!
+//! impl ValueObject<String> for Email {
+//!     fn validate(value: &String) -> bool {
+//!         let email_rx = Regex::new(
+//!             r"^(?i)[a-z0-9.!#$%&'*+/=?^_`{|}~-]+@[a-z0-9](?:[a-z0-9-]{0,61}[a-z0-9])?(?:.[a-z0-9](?:[a-z0-9-]{0,61}[a-z0-9])?)*$"
+//!         ).unwrap();
+//!
+//!         email_rx.is_match(value)
+//!     }
+//!
+//!     fn value(&self) -> &String {
+//!         return &self.value
+//!     }
+//! }
+//! ```
 
 #![recursion_limit = "128"]
 
@@ -77,6 +115,20 @@ pub fn value_object_derive(input: TokenStream) -> TokenStream {
         impl std::fmt::Display for #name {
             fn fmt(&self, f: &mut std::fmt::Formatter) -> std::fmt::Result {
                 write!(f, "{}", self.value)
+            }
+        }
+
+        impl std::cmp::PartialEq for #name {
+            fn eq(&self, other: &Self) -> bool {
+                self.value == other.value
+            }
+        }
+
+        impl std::clone::Clone for #name {
+            fn clone(&self) -> Self {
+                #name {
+                    value: self.value.clone()
+                }
             }
         }
 
