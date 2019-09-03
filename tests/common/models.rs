@@ -68,3 +68,13 @@ impl NaiveUser {
         &self.email
     }
 }
+
+pub fn create_test_user(user_id: &Uuid) -> NaiveUser {
+    // TODO: Update to return a Result type and pass error back.
+    NaiveUser::new(
+        user_id.clone(),
+        "first_name".to_string(),
+        "test_lname".to_string(),
+        "test_email@email.com".to_string(),
+    ).unwrap()
+}
