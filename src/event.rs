@@ -30,9 +30,15 @@ pub trait DomainEvent {
 /// Note: This should be implemented on an enum once for every aggregate root.
 pub trait DomainEvents {}
 
-// EventApplier should be applied only to aggregate roots in systems where you want to use event sourcing.
+/// EventApplier should be applied only to aggregate roots in systems where you want to use event sourcing.
 pub trait EventApplier: AggregateRoot {
+    /// EventError should be filled in with a custom error type that indicates something went wrong when
+    /// applying the event to the aggregate.
     type EventError;
 
+    /// Apply takes in an event enum, of the type declared during the creation of the aggregate root, and
+    /// internally should match to assess the specific variant.  Application of internal mutation should
+    /// then depend upon the event type, and event data.  It's useful to build out other internal methods
+    /// for applying each event type that `apply` can call for cleanliness.
     fn apply(&mut self, event: Self::Events) -> Result<(), Self::EventError>;
 }
