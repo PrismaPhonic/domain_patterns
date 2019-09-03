@@ -1,5 +1,8 @@
+#[macro_use]
+extern crate domain_derive;
+
 use domain_patterns::collections::*;
-pub mod common;
+mod common;
 use common::*;
 use uuid::Uuid;
 use crate::common::UserEvents::UserCreated;

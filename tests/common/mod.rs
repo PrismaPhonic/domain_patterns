@@ -10,8 +10,6 @@ use std::fmt::{Display, Formatter};
 use serde::{Serialize, Deserialize};
 use uuid::Uuid;
 
-
-
 // This is a simple example of the struct that matches the database rows events will be stored into.
 // Some data from event_data is denormalized into rows for easy querying.
 pub struct UserEventRecord {
@@ -35,7 +33,7 @@ pub struct UserCreatedEvent {
 impl UserCreatedEvent {
     pub fn new(user: &NaiveUser) -> UserCreatedEvent {
         UserCreatedEvent {
-            user_id: user.user_id,
+            user_id: user.id,
             first_name: user.first_name.clone(),
             last_name: user.last_name.clone(),
             email: user.email.to_string(),
@@ -97,7 +95,7 @@ impl DomainEvent for FirstNameUpdatedEvent {
 impl FirstNameUpdatedEvent {
     fn new(user: &NaiveUser) -> FirstNameUpdatedEvent {
         FirstNameUpdatedEvent {
-            user_id: user.user_id,
+            user_id: user.id,
             first_name: user.first_name.clone(),
             version: user.version,
             id: Uuid::new_v4(),
@@ -303,18 +301,23 @@ impl ValueObject<String> for Email {
     }
 }
 
+#[derive(Entity)]
 pub struct NaiveUser {
-    user_id: Uuid,
+    id: Uuid,
     version: u64,
     first_name: String,
     last_name: String,
     email: Email,
 }
 
+impl AggregateRoot for NaiveUser {
+    type Events = UserEvents;
+}
+
 impl NaiveUser {
     pub fn new(user_id: Uuid, first_name: String, last_name: String, email: String) -> Result<NaiveUser, EmailValidationError> {
         Ok(NaiveUser {
-            user_id,
+            id: user_id,
             version: 0,
             first_name,
             last_name,
@@ -344,24 +347,10 @@ impl NaiveUser {
     }
 }
 
-impl Entity for NaiveUser {
-    fn id(&self) -> Uuid {
-        return self.user_id.clone()
-    }
-
-    fn version(&self) -> u64 {
-        return self.version
-    }
-}
-
-impl AggregateRoot for NaiveUser {
-    type Events = UserEvents;
-}
-
 impl Clone for NaiveUser {
     fn clone(&self) -> Self {
         NaiveUser {
-            user_id: self.user_id.clone(),
+            id: self.id.clone(),
             version: self.version,
             first_name: self.first_name.clone(),
             last_name: self.last_name.clone(),
