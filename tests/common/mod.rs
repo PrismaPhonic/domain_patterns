@@ -19,9 +19,9 @@ pub struct UserEventRecord {
     pub event_data: UserEvents,
 }
 
-#[derive(Serialize, Deserialize, Clone)]
+#[derive(Serialize, Deserialize, Clone, DomainEvent)]
 pub struct UserCreatedEvent {
-    pub user_id: Uuid,
+    pub aggregate_id: Uuid,
     pub first_name: String,
     pub last_name: String,
     pub email: String,
@@ -33,7 +33,7 @@ pub struct UserCreatedEvent {
 impl UserCreatedEvent {
     pub fn new(user: &NaiveUser) -> UserCreatedEvent {
         UserCreatedEvent {
-            user_id: user.id,
+            aggregate_id: user.id,
             first_name: user.first_name.clone(),
             last_name: user.last_name.clone(),
             email: user.email.to_string(),
@@ -47,55 +47,19 @@ impl UserCreatedEvent {
 // Only making clonable for test case because we don't have a real backing database for events,
 // and need to easily clone the events so we keep them in our backing hashmap and return owned
 // copies back, since we will be returning owned copies when dealing with an actual datastore.
-#[derive(Serialize, Deserialize, Clone)]
+#[derive(Serialize, Deserialize, Clone, DomainEvent)]
 pub struct FirstNameUpdatedEvent {
-    pub user_id: Uuid,
+    pub aggregate_id: Uuid,
     pub first_name: String,
     pub version: u64,
     pub id: Uuid,
     pub occurred: i64,
 }
 
-impl DomainEvent for UserCreatedEvent {
-    fn occurred(&self) -> i64 {
-        self.occurred
-    }
-
-    fn id(&self) -> &Uuid {
-        &self.id
-    }
-
-    fn aggregate_id(&self) -> &Uuid {
-        &self.user_id
-    }
-
-    fn version(&self) -> u64 {
-        self.version
-    }
-}
-
-impl DomainEvent for FirstNameUpdatedEvent {
-    fn occurred(&self) -> i64 {
-        self.occurred
-    }
-
-    fn id(&self) -> &Uuid {
-        &self.id
-    }
-
-    fn aggregate_id(&self) -> &Uuid {
-        &self.user_id
-    }
-
-    fn version(&self) -> u64 {
-        self.version
-    }
-}
-
 impl FirstNameUpdatedEvent {
     fn new(user: &NaiveUser) -> FirstNameUpdatedEvent {
         FirstNameUpdatedEvent {
-            user_id: user.id,
+            aggregate_id: user.id,
             first_name: user.first_name.clone(),
             version: user.version,
             id: Uuid::new_v4(),
