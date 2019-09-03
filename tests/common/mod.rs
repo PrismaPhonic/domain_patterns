@@ -68,7 +68,7 @@ impl FirstNameUpdatedEvent {
     }
 }
 
-#[derive(Clone)]
+#[derive(Clone, DomainEvents)]
 pub enum UserEvents {
     UserCreated(UserCreatedEvent),
     FirstNameUpdated(FirstNameUpdatedEvent),
@@ -99,8 +99,6 @@ impl From<&UserEvents> for UserEventRecord {
         }
     }
 }
-
-impl DomainEvents for UserEvents {}
 
 /// Hashmap key in this case is aggregate id.
 pub struct UserEventRepository {
