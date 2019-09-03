@@ -239,7 +239,7 @@ impl EventRepository for UserEventRepository {
     }
 }
 
-#[derive(Clone, PartialEq, ValueSetup)]
+#[derive(ValueSetup)]
 pub struct Email {
     pub value: String,
 }
