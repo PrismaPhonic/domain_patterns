@@ -129,10 +129,6 @@ pub trait AggregateRoot: Entity {
 /// let email = Email::try_from("test_email@email.com".to_string()).unwrap();
 /// ```
 pub trait ValueObject<T>: Clone + PartialEq + TryFrom<T> + Display {
-    /// The implementer of this trait must point this type at some sort of `Error`.  This `Error` should communicate that there was some
-    /// kind of validation error that occurred when trying to create the value object.
-    type Error;
-
     /// `validate` takes in incoming data used to construct the value object, and validates it against
     /// given constraints.  An example would be if we had an `Email` struct that implements `ValueObject`.
     /// The constraints we would check would ensure that the incoming data is a valid email address.
