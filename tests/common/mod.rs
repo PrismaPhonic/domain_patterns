@@ -239,15 +239,9 @@ impl EventRepository for UserEventRepository {
     }
 }
 
-#[derive(Clone)]
+#[derive(Clone, PartialEq)]
 pub struct Email {
     pub address: String,
-}
-
-impl PartialEq for Email {
-    fn eq(&self, other: &Self) -> bool {
-        self.address == other.address
-    }
 }
 
 #[derive(Debug, Clone)]
