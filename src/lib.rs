@@ -69,6 +69,7 @@ extern crate syn;
 mod entity;
 mod value_object;
 mod domain_event;
+mod type_checks;
 
 use crate::proc_macro::TokenStream;
 use syn::DeriveInput;
@@ -138,7 +139,7 @@ pub fn value_object_derive(input: TokenStream) -> TokenStream {
 
         impl std::fmt::Display for #error_struct_name {
             fn fmt(&self, f: &mut std::fmt::Formatter) -> std::fmt::Result {
-                write!(f, "Email failed to validate.")
+                write!(f, "{} failed to validate.", #name)
             }
         }
 
