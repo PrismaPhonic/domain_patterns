@@ -191,7 +191,7 @@ pub fn domain_event_derive(input: TokenStream) -> TokenStream {
             }
 
             fn version(&self) -> u64 {
-                self.version
+                self.version as u64
             }
         }
     };
