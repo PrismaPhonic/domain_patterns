@@ -205,18 +205,18 @@ pub fn domain_event_derive(input: TokenStream) -> TokenStream {
     TokenStream::from(expanded)
 }
 
-//#[proc_macro_derive(DomainEvents)]
-//pub fn domain_events_derive(input: TokenStream) -> TokenStream {
-//    let input: DeriveInput = parse_macro_input!(input as DeriveInput);
-//
-//    // Struct name
-//    let name = &input.ident;
-//
-//    domain_events::precondition(&input).expect("DomainEvents macro failed preconditions");
-//
-//    let expanded = quote! {
-//        impl DomainEvents for #name {}
-//    };
-//
-//    TokenStream::from(expanded)
-//}
+#[proc_macro_derive(DomainEvents)]
+pub fn domain_events_derive(input: TokenStream) -> TokenStream {
+    let input: DeriveInput = parse_macro_input!(input as DeriveInput);
+
+    // Struct name
+    let name = &input.ident;
+
+    domain_events::precondition(&input).expect("DomainEvents macro failed preconditions");
+
+    let expanded = quote! {
+        impl DomainEvents for #name {}
+    };
+
+    TokenStream::from(expanded)
+}
