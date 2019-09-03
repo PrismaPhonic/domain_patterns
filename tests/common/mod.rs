@@ -239,49 +239,12 @@ impl EventRepository for UserEventRepository {
     }
 }
 
-#[derive(Clone, PartialEq)]
+#[derive(Clone, PartialEq, ValueSetup)]
 pub struct Email {
-    pub address: String,
-}
-
-#[derive(Debug, Clone)]
-pub struct EmailValidationError;
-
-impl fmt::Display for EmailValidationError {
-    fn fmt(&self, f: &mut Formatter) -> fmt::Result {
-        write!(f, "Email failed to validate.")
-    }
-}
-
-impl error::Error for EmailValidationError {
-    fn source(&self) -> Option<&(dyn error::Error + 'static)> {
-        None
-    }
-}
-
-impl TryFrom<String> for Email {
-    type Error = EmailValidationError;
-
-    fn try_from(value: String) -> Result<Self, Self::Error> {
-        if !Self::validate(&value) {
-            return Err(EmailValidationError)
-        }
-
-        Ok(Email {
-            address: value
-        })
-    }
-}
-
-impl Display for Email {
-    fn fmt(&self, f: &mut Formatter) -> fmt::Result {
-        write!(f, "{}", self.address)
-    }
+    pub value: String,
 }
 
 impl ValueObject<String> for Email {
-    type Error = EmailValidationError;
-
     fn validate(value: &String) -> bool {
         let email_rx = Regex::new(
             r"^(?i)[a-z0-9.!#$%&'*+/=?^_`{|}~-]+@[a-z0-9](?:[a-z0-9-]{0,61}[a-z0-9])?(?:.[a-z0-9](?:[a-z0-9-]{0,61}[a-z0-9])?)*$"
@@ -291,7 +254,7 @@ impl ValueObject<String> for Email {
     }
 
     fn value(&self) -> &String {
-        return &self.address
+        return &self.value
     }
 }
 

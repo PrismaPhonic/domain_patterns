@@ -105,8 +105,6 @@ pub trait AggregateRoot: Entity {
 /// }
 ///
 /// impl ValueObject<String> for Email {
-///     type Error = EmailValidationError;
-///
 ///     fn validate(value: &String) -> bool {
 ///         let email_rx = Regex::new(
 ///             r"^(?i)[a-z0-9.!#$%&'*+/=?^_`{|}~-]+@[a-z0-9](?:[a-z0-9-]{0,61}[a-z0-9])?(?:.[a-z0-9](?:[a-z0-9-]{0,61}[a-z0-9])?)*$"
