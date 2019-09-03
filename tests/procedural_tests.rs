@@ -2,6 +2,8 @@
 extern crate domain_derive;
 
 use domain_patterns::models::{Entity, ValueObject};
+use domain_patterns::event::DomainEvent;
+use serde::{Serialize, Deserialize};
 use uuid::Uuid;
 use std::convert::TryFrom;
 use regex::Regex;
@@ -40,6 +42,15 @@ impl ValueObject<String> for Email {
     }
 }
 
+#[derive(Serialize, Deserialize, Clone, DomainEvent)]
+pub struct FirstNameUpdatedEvent {
+    pub aggregate_id: Uuid,
+    pub first_name: String,
+    pub version: u64,
+    pub id: Uuid,
+    pub occurred: i64,
+}
+
 #[test]
 fn entity_macro_works() {
     let user = NaiveUser::new();
@@ -51,4 +62,16 @@ fn value_object_setup_macro_works() {
     let email = Email::try_from("test_email@email.com".to_string());
     assert!(email.is_ok());
     assert_eq!(email.unwrap().value, "test_email@email.com".to_string());
+}
+
+#[test]
+fn domain_event_macro_works() {
+    let updated_event = FirstNameUpdatedEvent {
+        aggregate_id: Uuid::new_v4(),
+        first_name: "new_name".to_string(),
+        version: 1,
+        id: Uuid::new_v4(),
+        occurred: 120984128912,
+    };
+    assert_eq!(&updated_event.aggregate_id, updated_event.aggregate_id());
 }

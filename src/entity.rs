@@ -70,7 +70,6 @@ fn is_uuid_type(field: &Field) -> bool {
 fn is_int_type(field: &Field) -> bool {
     fn path_is_int(path: &Path) -> bool {
         let path_str = path.segments.iter().next().unwrap().ident.to_string();
-        println!("{}", path_str);
         &path_str == "u128"
             || &path_str == "u64"
             || &path_str == "u32"

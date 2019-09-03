@@ -68,6 +68,7 @@ extern crate syn;
 
 mod entity;
 mod value_object;
+mod domain_event;
 
 use crate::proc_macro::TokenStream;
 use syn::DeriveInput;
@@ -158,6 +159,38 @@ pub fn value_object_derive(input: TokenStream) -> TokenStream {
                 Ok(#name {
                     value,
                 })
+            }
+        }
+    };
+
+    TokenStream::from(expanded)
+}
+
+#[proc_macro_derive(DomainEvent)]
+pub fn domain_event_derive(input: TokenStream) -> TokenStream {
+    let input: DeriveInput = parse_macro_input!(input as DeriveInput);
+
+    // Struct name
+    let name = &input.ident;
+
+    domain_event::precondition(&input).expect("DomainEvent macro failed preconditions");
+
+    let expanded = quote! {
+        impl DomainEvent for #name {
+            fn occurred(&self) -> i64 {
+                self.occurred
+            }
+
+            fn id(&self) -> &Uuid {
+                &self.id
+            }
+
+            fn aggregate_id(&self) -> &Uuid {
+                &self.aggregate_id
+            }
+
+            fn version(&self) -> u64 {
+                self.version
             }
         }
     };
