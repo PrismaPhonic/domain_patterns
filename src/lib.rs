@@ -267,7 +267,7 @@ pub fn value_object_derive(input: TokenStream) -> TokenStream {
             }
         }
 
-        impl TryFrom<#type_name> for #name {
+        impl std::convert::TryFrom<#type_name> for #name {
             type Error = #error_struct_name;
 
             fn try_from(value: #type_name) -> Result<Self, Self::Error> {
