@@ -113,8 +113,8 @@ pub trait AggregateRoot: Entity {
 ///         email_rx.is_match(value)
 ///     }
 ///
-///     fn value(&self) -> &String {
-///         return &self.address;
+///     fn value(&self) -> String {
+///         return self.address.clone();
 ///     }
 /// }
 ///
@@ -134,7 +134,7 @@ pub trait ValueObject<T>: Clone + PartialEq + TryFrom<T> + Display {
     /// Note: `validate` should be called by your implementation of `try_from`.
     fn validate(value: &T) -> bool;
 
-    /// `value` return a reference to the internal value held in the value object. This should be the only
+    /// `value` return a copy of the internal value held in the value object. This should be the only
     /// way that we access the internal data.  Mutation methods should always generate a new value object.
-    fn value(&self) -> &T;
+    fn value(&self) -> T;
 }
