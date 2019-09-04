@@ -7,7 +7,7 @@ repository = "https://github.com/prismaphonic/domain_derive"
 keywords = ["domain", "design", "patterns", "database", "architecture"]
 categories = ["database", "data-structures", "rust-patterns"]
 license = "MIT"
-version = "0.1.5"
+version = "0.1.6"
 authors = ["Peter Farr <Peter@PrismaPhonic.com>"]
 edition = "2018"
 include = [
@@ -24,7 +24,7 @@ proc-macro = true
 maintenance = { status = "actively-developed" }
 
 [dependencies]
-domain_patterns = "0.1.5"
+domain_patterns = "0.1.6"
 syn = { version = "1.0.5", features = ["derive"] }
 quote = "1.0.2"
 
