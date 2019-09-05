@@ -28,7 +28,7 @@ pub struct UserCreatedEvent {
 impl UserCreatedEvent {
     pub fn new(user: &NaiveUser) -> UserCreatedEvent {
         UserCreatedEvent {
-            aggregate_id: user.id(),
+            aggregate_id: user.id().clone(),
             first_name: user.first_name().clone(),
             last_name: user.last_name().clone(),
             email: user.email().to_string(),
@@ -54,7 +54,7 @@ pub struct FirstNameUpdatedEvent {
 impl FirstNameUpdatedEvent {
     fn new(user: &NaiveUser) -> FirstNameUpdatedEvent {
         FirstNameUpdatedEvent {
-            aggregate_id: user.id(),
+            aggregate_id: user.id().clone(),
             first_name: user.first_name().clone(),
             version: user.version(),
             id: Uuid::new_v4(),

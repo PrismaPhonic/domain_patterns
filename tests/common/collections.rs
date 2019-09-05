@@ -43,8 +43,8 @@ impl Repository<NaiveUser> for MockUserRepository {
         let result = if self.contains_key(&key).unwrap() {
             None
         } else {
-            self.data.insert(entity.id(), entity.clone());
-            self.get(&key).unwrap()
+                self.data.insert(entity.id().clone(), entity.clone());
+            self.get(key).unwrap()
         };
 
         Ok(result)
@@ -86,8 +86,8 @@ impl Repository<NaiveUser> for MockUserRepository {
         let key = entity.id();
 
         let result = if self.contains_key(&key).unwrap() {
-            self.data.insert(entity.id(), entity.clone());
-            self.get(&key).unwrap()
+            self.data.insert(entity.id().clone(), entity.clone());
+            self.get(key).unwrap()
         } else {
             None
         };

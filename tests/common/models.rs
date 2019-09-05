@@ -53,20 +53,6 @@ impl NaiveUser {
         let _created_event = UserCreatedEvent::new(self);
         // would publish event here - maybe create a mock bus for demonstration purposes.
     }
-
-    // following getters are to replicate pattern common in many OOP language with private setters
-    // and public getters.
-    pub fn first_name(&self) -> &String {
-        &self.first_name
-    }
-
-    pub fn last_name(&self) -> &String {
-        &self.last_name
-    }
-
-    pub fn email(&self) -> &Email {
-        &self.email
-    }
 }
 
 pub fn create_test_user(user_id: &Uuid) -> NaiveUser {
