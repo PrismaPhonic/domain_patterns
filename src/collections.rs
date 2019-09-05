@@ -10,7 +10,7 @@ use crate::event::DomainEvents;
 pub trait Repository<T: AggregateRoot> {
     /// The implementer of this trait must point this type at some sort of `Error`.  This `Error` should communicate that there was some
     /// kind of problem related to communication with the underlying database.
-    type Error: Error;
+    type Error: Error + 'static;
 
     /// Inserts an entity into the underlying persistent storage (MySQL, Postgres, Mongo etc.).
     ///
