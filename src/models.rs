@@ -21,8 +21,8 @@ use crate::event::DomainEvents;
 /// }
 ///
 /// impl Entity for User {
-///     fn id(&self) -> uuid::Uuid {
-///         self.user_id.clone()
+///     fn id(&self) -> &uuid::Uuid {
+///         &self.user_id
 ///     }
 ///
 ///     fn version(&self) -> u64 {
@@ -34,7 +34,7 @@ use crate::event::DomainEvents;
 /// [`id()`]: ./trait.Entity.html#tymethod.id
 pub trait Entity {
     /// id should be the entities globally unique id.
-    fn id(&self) -> Uuid;
+    fn id(&self) -> &Uuid;
 
     /// version is a simple integers that is incremented for every mutation.
     /// This allows us to have something like an `EntityCreated` event where we
