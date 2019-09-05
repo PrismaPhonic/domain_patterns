@@ -161,16 +161,24 @@ pub fn entity_derive(input: TokenStream) -> TokenStream {
     // Struct name
     let name = &input.ident;
 
-    let expanded = quote! {
+    let mut streams = vec![];
+    streams.push(quote! {
         impl domain_patterns::models::Entity for #name {
-            fn id(&self) -> Uuid {
-                self.id.clone()
+            fn id(&self) -> &Uuid {
+                &self.id
             }
 
             fn version(&self) -> u64 {
                 self.version as u64
             }
         }
+    });
+
+    let getters = entity::produce_getters(&input).expect("Entity macro failed to produce getters");
+    streams.push(getters);
+
+    let expanded = quote! {
+       #(#streams)*
     };
 
     TokenStream::from(expanded)

@@ -8,20 +8,32 @@ use uuid::Uuid;
 use std::convert::TryFrom;
 use regex::Regex;
 
-#[derive(Entity)]
-struct NaiveUser {
-    id: Uuid,
-    version: u64,
-}
+pub mod entity {
+    use uuid::Uuid;
 
-impl NaiveUser {
-    fn new() -> NaiveUser {
-        NaiveUser {
-            id: Uuid::new_v4(),
-            version: 0,
+    #[derive(Entity)]
+    pub struct NaiveUser {
+        id: Uuid,
+        version: u64,
+        name: String,
+        // this field will break compiling on purpose
+        // for testing purposes.  should not be able to have
+        // pub field with this macro.
+        // pub bad_field: String,
+    }
+
+    impl NaiveUser {
+        pub(crate) fn new() -> NaiveUser {
+            NaiveUser {
+                id: Uuid::new_v4(),
+                version: 0,
+                name: "Test".to_string(),
+                // bad_field: "Test".to_string(),
+            }
         }
     }
 }
+
 
 #[derive(ValueSetup)]
 pub struct Email {
@@ -62,8 +74,23 @@ pub enum UserEvents {
 
 #[test]
 fn entity_macro_works() {
-    let user = NaiveUser::new();
-    assert_eq!(&user.id, &user.id())
+    let user = entity::NaiveUser::new();
+    assert_eq!(user.name(), "Test")
+}
+
+#[test]
+fn cannot_mutate_entity_fields_ever() {
+    let mut user = entity::NaiveUser::new();
+    let mut name = user.name();
+
+//    // fails
+//    let new_name = "NewName".to_string();
+//    *user.name() = new_name;
+
+//    // Uncomment for compile failure
+//    user.name = "NewName".to_string();
+
+    assert_ne!(user.name(), "NewName");
 }
 
 #[test]
