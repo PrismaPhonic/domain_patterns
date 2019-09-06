@@ -1,6 +1,5 @@
 use std::convert::TryFrom;
 use std::fmt::Display;
-use uuid::Uuid;
 use crate::event::DomainEvents;
 
 /// A trait that defines an `Entity`, which is any object with a unique and globally persistent identity.
@@ -11,22 +10,28 @@ use crate::event::DomainEvents;
 ///
 /// # Example
 /// ```rust
-/// use domain_patterns::models::{AggregateRoot, Entity};
+/// use domain_patterns::models::Entity;
 ///
 /// struct User {
-///     user_id: uuid::Uuid,
+///     id: uuid::Uuid,
 ///     version: u64,
 ///     email: String,
 ///     password: String,
 /// }
 ///
 /// impl Entity for User {
-///     fn id(&self) -> &uuid::Uuid {
-///         &self.user_id
+///     fn id(&self) -> String {
+///         self.id.to_string()
 ///     }
 ///
 ///     fn version(&self) -> u64 {
 ///         self.version
+///     }
+/// }
+///
+/// impl std::cmp::PartialEq for User {
+///     fn eq(&self, other: &Self) -> bool {
+///         &self.id() == &other.id()
 ///     }
 /// }
 /// ```

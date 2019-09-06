@@ -21,9 +21,9 @@ maintenance = { status = "actively-developed" }
 
 [dependencies]
 serde = { version = "1.0.99", features = ["derive"] }
-uuid = { version = "0.7.4", features = ["serde", "v4"] }
 
 [dev-dependencies]
+uuid = { version = "0.7.4", features = ["serde", "v4"] }
 serde_json = "1.0.40"
 chrono = "0.4.7"
 regex = "1.2.1"
