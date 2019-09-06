@@ -1,6 +1,5 @@
 use crate::models::AggregateRoot;
 use std::error::Error;
-use uuid::Uuid;
 use crate::event::DomainEvents;
 
 /// A trait that provides a collection like abstraction over database access.
@@ -38,7 +37,7 @@ pub trait Repository<T: AggregateRoot> {
     /// # Failure case
     ///
     /// If we fail to communicate with the underlying storage, then an error is returned.
-    fn get(&self, key: &Uuid) -> Result<Option<T>, Self::Error>;
+    fn get(&self, key: &String) -> Result<Option<T>, Self::Error>;
 
 
     /// Returns a `Vec<T>` of entities, based on the supplied `page_num` and `page_size`.
@@ -58,7 +57,7 @@ pub trait Repository<T: AggregateRoot> {
     ///
     /// [`Eq`]: https://doc.rust-lang.org/std/cmp/trait.Eq.html
     /// [`Hash`]: https://doc.rust-lang.org/std/hash/trait.Hash.html
-    fn contains_key(&self, key: &Uuid) -> Result<bool, Self::Error> {
+    fn contains_key(&self, key: &String) -> Result<bool, Self::Error> {
         Ok(self.get(key)?.is_some())
     }
 
@@ -84,7 +83,7 @@ pub trait Repository<T: AggregateRoot> {
     /// [`None`]: https://doc.rust-lang.org/std/option/enum.Option.html#variant.None
     /// [`Eq`]: https://doc.rust-lang.org/std/cmp/trait.Eq.html
     /// [`Hash`]: https://doc.rust-lang.org/std/hash/trait.Hash.html
-    fn remove(&mut self, key: &Uuid) -> Result<Option<T>, Self::Error>;
+    fn remove(&mut self, key: &String) -> Result<Option<T>, Self::Error>;
 }
 
 /// A trait that provides a collection like abstraction over read only database access.
@@ -101,7 +100,7 @@ pub trait ReadRepository<T: AggregateRoot> {
     /// # Failure case
     ///
     /// If we fail to communicate with the underlying storage, then an error is returned.
-    fn get(&self, key: &Uuid) -> Result<Option<T>, Self::Error>;
+    fn get(&self, key: &String) -> Result<Option<T>, Self::Error>;
 
 
     /// Returns a `Vec<T>` of entities, based on the supplied `page_num` and `page_size`.
@@ -121,7 +120,7 @@ pub trait ReadRepository<T: AggregateRoot> {
     ///
     /// [`Eq`]: https://doc.rust-lang.org/std/cmp/trait.Eq.html
     /// [`Hash`]: https://doc.rust-lang.org/std/hash/trait.Hash.html
-    fn contains_key(&self, key: &Uuid) -> Result<bool, Self::Error> {
+    fn contains_key(&self, key: &String) -> Result<bool, Self::Error> {
         Ok(self.get(key)?.is_some())
     }
 }
@@ -132,30 +131,30 @@ pub trait EventRepository {
     type Events: DomainEvents;
     /// events_by_aggregate returns a vector of pointers to events filtered by the supplied
     /// aggregate id.
-    fn events_by_aggregate(&self, aggregate_id: &Uuid) -> Option<Vec<Self::Events>>;
+    fn events_by_aggregate(&self, aggregate_id: &String) -> Option<Vec<Self::Events>>;
 
     /// events_since_version will give the caller all the events that have occurred for the given
     /// aggregate id since the version number supplied.
-    fn events_since_version(&self, aggregate_id: &Uuid, version: u64) -> Option<Vec<Self::Events>>;
+    fn events_since_version(&self, aggregate_id: &String, version: u64) -> Option<Vec<Self::Events>>;
 
     /// num_events_since_version provides a vector of events of a length equal to the supplied `num_events`
     /// integer, starting from version + 1, and going up to version + num_events in sequential order.
     ///
     /// Used for re-hydrating aggregates, where the aggregate root can ask for chunks of events that occurred
     /// after it's current version number.
-    fn num_events_since_version(&self, aggregate_id: &Uuid, version: u64, num_events: u64) -> Option<Vec<Self::Events>>;
+    fn num_events_since_version(&self, aggregate_id: &String, version: u64, num_events: u64) -> Option<Vec<Self::Events>>;
 
 
     /// Returns the event if it exists that corresponds to the supplied event_id as an owned type.
-    fn get(&self, event_id: &Uuid) -> Option<Self::Events>;
+    fn get(&self, event_id: &String) -> Option<Self::Events>;
 
     /// Returns a boolean indicating whether the event repository contains the event by the supplied id.
-    fn contains_event(&self, event_id: &Uuid) -> bool {
+    fn contains_event(&self, event_id: &String) -> bool {
         self.get(event_id).is_some()
     }
 
     /// Returns a bool letting the caller know if the event repository contains any events associated with the aggregate id.
-    fn contains_aggregate(&self, aggregate_id: &Uuid) -> bool;
+    fn contains_aggregate(&self, aggregate_id: &String) -> bool;
 
     /// Inserts a new domain event into the event store.
     fn insert(&mut self, event: &Self::Events) -> Option<Self::Events>;
