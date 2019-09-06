@@ -32,9 +32,10 @@ use crate::event::DomainEvents;
 /// ```
 ///
 /// [`id()`]: ./trait.Entity.html#tymethod.id
-pub trait Entity {
-    /// id should be the entities globally unique id.
-    fn id(&self) -> &Uuid;
+pub trait Entity: PartialEq {
+    /// id should be the entities globally unique id. It doesn't matter what it is internally as
+    /// long as that thing can be returned as a string (implements Display from std)
+    fn id(&self) -> String;
 
     /// version is a simple integers that is incremented for every mutation.
     /// This allows us to have something like an `EntityCreated` event where we
