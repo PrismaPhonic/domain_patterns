@@ -22,7 +22,7 @@ pub trait DomainEvent {
     /// All that matters is that you can turn the id into a string.  For instance Uuid's from the uuid crate implement
     /// Display, so you can call `.to_string()`.  Do NOT pass ownership of the underlying data (if your underlying id
     /// is a String, clone it)
-    fn aggregate_id(&self) -> String;
+    fn aggregate_id(&self) -> &String;
 
     /// version holds the version of the aggregate that the event corresponds to, which can be
     /// used to correctly order events for playback.
