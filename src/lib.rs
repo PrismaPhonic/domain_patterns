@@ -103,10 +103,10 @@
 //!
 //! #[derive(Serialize, Clone, DomainEvent)]
 //! pub struct FirstNameUpdatedEvent {
-//!     pub aggregate_id: Uuid,
+//!     pub id: Uuid,
+//!     pub aggregate_id: String,
 //!     pub first_name: String,
 //!     pub version: u64,
-//!     pub id: Uuid,
 //!     pub occurred: i64,
 //! }
 //!
@@ -164,8 +164,8 @@ pub fn entity_derive(input: TokenStream) -> TokenStream {
     let mut streams = vec![];
     streams.push(quote! {
         impl domain_patterns::models::Entity for #name {
-            fn id(&self) -> &Uuid {
-                &self.id
+            fn id(&self) -> String {
+                self.id.to_string()
             }
 
             fn version(&self) -> u64 {
@@ -311,10 +311,10 @@ pub fn value_object_derive(input: TokenStream) -> TokenStream {
 ///
 /// #[derive(Serialize, Clone, DomainEvent)]
 /// pub struct FirstNameUpdatedEvent {
-///     pub aggregate_id: Uuid,
+///     pub id: Uuid,
+///     pub aggregate_id: String,
 ///     pub first_name: String,
 ///     pub version: u64,
-///     pub id: Uuid,
 ///     pub occurred: i64,
 /// }
 /// ```
@@ -333,12 +333,12 @@ pub fn domain_event_derive(input: TokenStream) -> TokenStream {
                 self.occurred
             }
 
-            fn id(&self) -> &Uuid {
-                &self.id
+            fn id(&self) -> String {
+                self.id.to_string()
             }
 
-            fn aggregate_id(&self) -> &Uuid {
-                &self.aggregate_id
+            fn aggregate_id(&self) -> String {
+                self.aggregate_id.clone()
             }
 
             fn version(&self) -> u64 {
@@ -363,10 +363,10 @@ pub fn domain_event_derive(input: TokenStream) -> TokenStream {
 ///
 /// #[derive(Serialize, Clone, DomainEvent)]
 /// pub struct FirstNameUpdatedEvent {
-///     pub aggregate_id: Uuid,
+///     pub id: Uuid,
+///     pub aggregate_id: String,
 ///     pub first_name: String,
 ///     pub version: u64,
-///     pub id: Uuid,
 ///     pub occurred: i64,
 /// }
 ///

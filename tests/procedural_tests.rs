@@ -9,11 +9,9 @@ use std::convert::TryFrom;
 use regex::Regex;
 
 pub mod entity {
-    use uuid::Uuid;
-
     #[derive(Entity)]
     pub struct NaiveUser {
-        id: Uuid,
+        id: uuid::Uuid,
         version: u64,
         name: String,
         // this field will break compiling on purpose
@@ -25,11 +23,17 @@ pub mod entity {
     impl NaiveUser {
         pub(crate) fn new() -> NaiveUser {
             NaiveUser {
-                id: Uuid::new_v4(),
+                id: uuid::Uuid::new_v4(),
                 version: 0,
                 name: "Test".to_string(),
                 // bad_field: "Test".to_string(),
             }
+        }
+    }
+
+    impl std::cmp::PartialEq for NaiveUser {
+        fn eq(&self, other: &Self) -> bool {
+            self.id == other.id
         }
     }
 }
@@ -56,10 +60,10 @@ impl ValueObject<String> for Email {
 
 #[derive(Serialize, Deserialize, Clone, DomainEvent)]
 pub struct FirstNameUpdatedEvent {
-    pub aggregate_id: Uuid,
+    pub id: Uuid,
+    pub aggregate_id: String,
     pub first_name: String,
     pub version: u64,
-    pub id: Uuid,
     pub occurred: i64,
 }
 
@@ -103,11 +107,11 @@ fn value_object_setup_macro_works() {
 #[test]
 fn domain_event_macro_works() {
     let updated_event = FirstNameUpdatedEvent {
-        aggregate_id: Uuid::new_v4(),
+        aggregate_id: Uuid::new_v4().to_string(),
         first_name: "new_name".to_string(),
         version: 1,
         id: Uuid::new_v4(),
         occurred: 120984128912,
     };
-    assert_eq!(&updated_event.aggregate_id, updated_event.aggregate_id());
+    assert_eq!(&updated_event.aggregate_id, &updated_event.aggregate_id());
 }
