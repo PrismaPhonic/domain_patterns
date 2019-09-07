@@ -140,6 +140,7 @@ pub trait ValueObject<T>: Clone + PartialEq + TryFrom<T> + Display {
     /// Note: `validate` should be called by your implementation of `try_from`.
     fn validate(value: &T) -> bool;
 
+    // TODO: This should be a ref like most getters
     /// `value` return a copy of the internal value held in the value object. This should be the only
     /// way that we access the internal data.  Mutation methods should always generate a new value object.
     fn value(&self) -> T;
