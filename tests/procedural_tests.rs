@@ -30,12 +30,6 @@ pub mod entity {
             }
         }
     }
-
-    impl std::cmp::PartialEq for NaiveUser {
-        fn eq(&self, other: &Self) -> bool {
-            self.id == other.id
-        }
-    }
 }
 
 

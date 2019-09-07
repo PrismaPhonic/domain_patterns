@@ -172,6 +172,12 @@ pub fn entity_derive(input: TokenStream) -> TokenStream {
                 self.version as u64
             }
         }
+
+        impl std::cmp::PartialEq for #name {
+            fn eq(&self, other: &Self) -> bool {
+                self.id == other.id
+            }
+        }
     });
 
     let getters = entity::produce_getters(&input).expect("Entity macro failed to produce getters");
