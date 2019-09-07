@@ -8,8 +8,8 @@ use crate::common::NaiveUser;
 // This is a simple example of the struct that matches the database rows events will be stored into.
 // Some data from event_data is denormalized into rows for easy querying.
 pub struct UserEventRecord {
-    pub id: Uuid,
-    pub aggregate_id: Uuid,
+    pub id: String,
+    pub aggregate_id: String,
     pub version: u64,
     pub event_data: UserEvents,
 }
@@ -28,7 +28,7 @@ pub struct UserCreatedEvent {
 impl UserCreatedEvent {
     pub fn new(user: &NaiveUser) -> UserCreatedEvent {
         UserCreatedEvent {
-            aggregate_id: user.id().clone(),
+            aggregate_id: user.id(),
             first_name: user.first_name().clone(),
             last_name: user.last_name().clone(),
             email: user.email().to_string(),
@@ -44,17 +44,17 @@ impl UserCreatedEvent {
 // copies back, since we will be returning owned copies when dealing with an actual datastore.
 #[derive(Serialize, Deserialize, Clone, DomainEvent)]
 pub struct FirstNameUpdatedEvent {
-    pub aggregate_id: Uuid,
+    pub id: Uuid,
+    pub aggregate_id: String,
     pub first_name: String,
     pub version: u64,
-    pub id: Uuid,
     pub occurred: i64,
 }
 
 impl FirstNameUpdatedEvent {
     fn new(user: &NaiveUser) -> FirstNameUpdatedEvent {
         FirstNameUpdatedEvent {
-            aggregate_id: user.id().clone(),
+            aggregate_id: user.id(),
             first_name: user.first_name().clone(),
             version: user.version(),
             id: Uuid::new_v4(),
@@ -77,16 +77,16 @@ impl From<&UserEvents> for UserEventRecord {
         match value {
             UserCreated(e) => {
                 UserEventRecord {
-                    id: e.id().clone(),
-                    aggregate_id: e.aggregate_id().clone(),
+                    id: e.id().to_string(),
+                    aggregate_id: e.aggregate_id(),
                     version: e.version(),
                     event_data: UserCreated(e.clone()),
                 }
             },
             FirstNameUpdated(e) => {
                 UserEventRecord {
-                    id: e.id().clone(),
-                    aggregate_id: e.aggregate_id().clone(),
+                    id: e.id().to_string(),
+                    aggregate_id: e.aggregate_id(),
                     version: e.version(),
                     event_data: FirstNameUpdated(e.clone()),
                 }

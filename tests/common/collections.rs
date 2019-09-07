@@ -2,12 +2,11 @@ use std::collections::HashMap;
 use domain_patterns::models::Entity;
 use domain_patterns::collections::{Repository, EventRepository};
 use std::{fmt, error};
-use uuid::Uuid;
 use crate::common::{NaiveUser, UserEventRecord, UserEvents};
 
 // for naive testing
 pub struct MockUserRepository {
-    data: HashMap<Uuid, NaiveUser>
+    data: HashMap<String, NaiveUser>
 }
 
 impl MockUserRepository {
@@ -50,7 +49,7 @@ impl Repository<NaiveUser> for MockUserRepository {
         Ok(result)
     }
 
-    fn get(&self, key: &Uuid) -> Result<Option<NaiveUser>, Self::Error> {
+    fn get(&self, key: &String) -> Result<Option<NaiveUser>, Self::Error> {
         let result = if let Some(user) = self.data.get(key) {
             Some(user.clone())
         } else {
@@ -95,7 +94,7 @@ impl Repository<NaiveUser> for MockUserRepository {
         Ok(result)
     }
 
-    fn remove(&mut self, key: &Uuid) -> Result<Option<NaiveUser>, Self::Error> {
+    fn remove(&mut self, key: &String) -> Result<Option<NaiveUser>, Self::Error> {
         let result = self.data.remove(key);
         Ok(result)
     }
@@ -103,12 +102,12 @@ impl Repository<NaiveUser> for MockUserRepository {
 
 /// Hashmap key in this case is aggregate id.
 pub struct UserEventRepository {
-    store: HashMap<Uuid, Vec<UserEventRecord>>,
+    store: HashMap<String, Vec<UserEventRecord>>,
 }
 
 impl UserEventRepository {
     pub fn new() -> UserEventRepository {
-        let store: HashMap<Uuid, Vec<UserEventRecord>> = HashMap::new();
+        let store: HashMap<String, Vec<UserEventRecord>> = HashMap::new();
         UserEventRepository {
             store,
         }
@@ -128,7 +127,7 @@ impl UserEventRepository {
 impl EventRepository for UserEventRepository {
     type Events = UserEvents;
 
-    fn events_by_aggregate(&self, aggregate_id: &Uuid) -> Option<Vec<Self::Events>> {
+    fn events_by_aggregate(&self, aggregate_id: &String) -> Option<Vec<Self::Events>> {
         if let Some(events) = self.store.get(aggregate_id) {
             let events: Vec<Self::Events> = events.iter().map(|e| { e.event_data.clone() }).collect();
             return Some(events);
@@ -136,7 +135,7 @@ impl EventRepository for UserEventRepository {
         None
     }
 
-    fn events_since_version(&self, aggregate_id: &Uuid, version: u64) -> Option<Vec<Self::Events>> {
+    fn events_since_version(&self, aggregate_id: &String, version: u64) -> Option<Vec<Self::Events>> {
         if let Some(records) = self.store.get(aggregate_id) {
             let mut filtered_records: Vec<&UserEventRecord> = records
                 .iter()
@@ -153,7 +152,7 @@ impl EventRepository for UserEventRepository {
         None
     }
 
-    fn num_events_since_version(&self, aggregate_id: &Uuid, version: u64, num_events: u64) -> Option<Vec<Self::Events>> {
+    fn num_events_since_version(&self, aggregate_id: &String, version: u64, num_events: u64) -> Option<Vec<Self::Events>> {
         if let Some(records) = self.store.get(aggregate_id) {
             let mut filtered_records: Vec<&UserEventRecord> = records
                 .iter()
@@ -173,7 +172,7 @@ impl EventRepository for UserEventRepository {
     }
 
     /// retrieves by event id.
-    fn get(&self, event_id: &Uuid) -> Option<Self::Events> {
+    fn get(&self, event_id: &String) -> Option<Self::Events> {
         let maybe_record = self.store.iter().find_map(|(_, records)| {
             records.iter().find(|record| { record.id == *event_id })
         });
@@ -183,13 +182,13 @@ impl EventRepository for UserEventRepository {
         None
     }
 
-    fn contains_aggregate(&self, aggregate_id: &Uuid) -> bool {
+    fn contains_aggregate(&self, aggregate_id: &String) -> bool {
         self.store.contains_key(aggregate_id)
     }
 
     fn insert(&mut self, event: &UserEvents) -> Option<Self::Events> {
         let ev_record = UserEventRecord::from(event);
-        if self.contains_event(&ev_record.id) {
+        if self.contains_event(&ev_record.id()) {
             None
         } else {
             if self.contains_aggregate(&ev_record.aggregate_id) {
