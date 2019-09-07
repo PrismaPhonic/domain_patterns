@@ -2,7 +2,7 @@
 extern crate domain_derive;
 
 use domain_patterns::collections::*;
-mod common;
+pub mod common;
 use common::*;
 use uuid::Uuid;
 use crate::common::UserEvents::UserCreated;
@@ -17,8 +17,8 @@ fn test_store_event() {
     let mut user_event_repo = UserEventRepository::new();
 
     user_event_repo.insert(&UserCreated(user_created_event.clone()));
-    assert!(user_event_repo.contains_aggregate(user_created_event.aggregate_id()));
-    assert!(user_event_repo.contains_event(user_created_event.id()));
+    assert!(user_event_repo.contains_aggregate(&user_created_event.aggregate_id()));
+    assert!(user_event_repo.contains_event(&user_created_event.id()));
 }
 
 #[test]
@@ -30,7 +30,7 @@ fn test_retrieve_event() {
     let mut user_event_repo = UserEventRepository::new();
 
     user_event_repo.insert(&UserCreated(user_created_event.clone()));
-    let event = user_event_repo.get(user_created_event.id()).unwrap();
+    let event = user_event_repo.get(&user_created_event.id()).unwrap();
 
     let mut mutated_for_failure = user_created_event.clone();
     mutated_for_failure.id = Uuid::new_v4();

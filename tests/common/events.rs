@@ -16,7 +16,7 @@ pub struct UserEventRecord {
 
 #[derive(Serialize, Deserialize, Clone, DomainEvent)]
 pub struct UserCreatedEvent {
-    pub aggregate_id: Uuid,
+    pub aggregate_id: String,
     pub first_name: String,
     pub last_name: String,
     pub email: String,

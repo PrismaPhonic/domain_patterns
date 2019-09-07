@@ -13,7 +13,7 @@ fn test_add_user() {
     let test_user = common::create_test_user(&user_id);
     let mut user_repo = MockUserRepository::new();
     user_repo.insert(&test_user);
-    let success_result = user_repo.get(&user_id).unwrap();
+    let success_result = user_repo.get(&user_id.to_string()).unwrap();
 
     assert_eq!(&success_result.unwrap().first_name(), &test_user.first_name())
 }
@@ -27,7 +27,7 @@ fn test_cant_add_duplicate() {
     let returned_entity = user_repo.insert(&test_user).unwrap();
     assert!(returned_entity.is_some());
 
-    let success_result = user_repo.get(&user_id).unwrap();
+    let success_result = user_repo.get(&user_id.to_string()).unwrap();
     assert_eq!(&success_result.unwrap().first_name(), &test_user.first_name());
 
     let failure_result = user_repo.insert(&test_user).unwrap();
@@ -52,7 +52,7 @@ fn test_update_user() {
     assert_eq!(updated_user.unwrap().first_name(), &updated_name);
 
     // sanity check with fresh get and check that name was updated;
-    updated_user = user_repo.get(&user_id).unwrap();
+    updated_user = user_repo.get(&user_id.to_string()).unwrap();
     assert_eq!(updated_user.unwrap().first_name(), &updated_name);
 }
 
@@ -65,10 +65,10 @@ fn test_remove_user() {
     user_repo.insert(&test_user);
 
     // we first check that user is in repo
-    assert!(user_repo.contains_key(&user_id).unwrap());
+    assert!(user_repo.contains_key(&user_id.to_string()).unwrap());
 
-    user_repo.remove(&user_id);
-    assert!(!user_repo.contains_key(&user_id).unwrap())
+    user_repo.remove(&user_id.to_string());
+    assert!(!user_repo.contains_key(&user_id.to_string()).unwrap())
 }
 
 #[test]
@@ -82,9 +82,9 @@ fn test_get_paged() {
     let mut user_repo = MockUserRepository::new();
 
     user_repo.insert(&test_user1);
-    assert!(user_repo.contains_key(&user_id1).unwrap());
+    assert!(user_repo.contains_key(&user_id1.to_string()).unwrap());
     user_repo.insert(&test_user2);
-    assert!(user_repo.contains_key(&user_id2).unwrap());
+    assert!(user_repo.contains_key(&user_id2.to_string()).unwrap());
 
     let results = user_repo.get_paged(1, 2).unwrap();
     assert_eq!(results.len(), 2)

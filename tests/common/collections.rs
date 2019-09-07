@@ -43,7 +43,7 @@ impl Repository<NaiveUser> for MockUserRepository {
             None
         } else {
                 self.data.insert(entity.id().clone(), entity.clone());
-            self.get(key).unwrap()
+            self.get(&key).unwrap()
         };
 
         Ok(result)
@@ -86,7 +86,7 @@ impl Repository<NaiveUser> for MockUserRepository {
 
         let result = if self.contains_key(&key).unwrap() {
             self.data.insert(entity.id().clone(), entity.clone());
-            self.get(key).unwrap()
+            self.get(&key).unwrap()
         } else {
             None
         };
@@ -188,13 +188,13 @@ impl EventRepository for UserEventRepository {
 
     fn insert(&mut self, event: &UserEvents) -> Option<Self::Events> {
         let ev_record = UserEventRecord::from(event);
-        if self.contains_event(&ev_record.id()) {
+        if self.contains_event(&ev_record.id) {
             None
         } else {
             if self.contains_aggregate(&ev_record.aggregate_id) {
-                self.store.entry(ev_record.aggregate_id).and_modify(|e| e.push(ev_record));
+                self.store.entry(ev_record.aggregate_id.clone()).and_modify(|e| e.push(ev_record));
             } else {
-                self.store.insert(ev_record.aggregate_id, vec!(ev_record));
+                self.store.insert(ev_record.aggregate_id.clone(), vec!(ev_record));
             }
             Some(event.clone())
         }
