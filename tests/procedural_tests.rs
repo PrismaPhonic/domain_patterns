@@ -47,8 +47,8 @@ impl ValueObject<String> for Email {
         email_rx.is_match(value)
     }
 
-    fn value(&self) -> &String {
-        &self.value
+    fn value(&self) -> String {
+        self.value.clone()
     }
 }
 
