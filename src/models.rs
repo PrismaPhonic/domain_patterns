@@ -70,15 +70,9 @@ pub trait AggregateRoot: Entity {
 /// use domain_patterns::models::ValueObject;
 ///
 ///
-/// #[derive(Clone)]
+/// #[derive(Clone, PartialEq)]
 /// struct Email {
 ///     address: String,
-/// }
-///
-/// impl PartialEq for Email {
-///     fn eq(&self, other: &Self) -> bool {
-///         self.address == other.address
-///     }
 /// }
 ///
 /// #[derive(Debug, Clone)]
