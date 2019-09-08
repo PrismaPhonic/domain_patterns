@@ -115,8 +115,8 @@ pub trait AggregateRoot: Entity {
 ///         email_rx.is_match(value)
 ///     }
 ///
-///     fn value(&self) -> &String {
-///         return &self.value
+///     fn value(&self) -> String {
+///         return self.value.clone()
 ///     }
 /// }
 ///
@@ -138,5 +138,10 @@ pub trait ValueObject<T>: Clone + PartialEq + TryFrom<T> + Display {
 
     /// `value` return a reference to the internal value held in the value object. This should be the only
     /// way that we access the internal data.  Mutation methods should always generate a new value object.
-    fn value(&self) -> &T;
+    /// Note: It's intentional that value returns an owned type.  This is necessary for enums, where we likely
+    /// want to return a String after matching (since a string is how we match to figure out the variant upon value object
+    /// creation), but in that case the string is created on the match in value(), and therefore we must pass back an owned
+    /// value, not a ref (the string that was freshly created would be dropped at the end of value() if we try to pass
+    /// back a ref of it).
+    fn value(&self) -> T;
 }
