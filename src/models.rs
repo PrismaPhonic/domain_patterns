@@ -59,6 +59,8 @@ pub trait AggregateRoot: Entity {
     type Events: DomainEvents;
 }
 
+// TODO: Improve error handling situation for ValueObjects.  Maybe validate should return a list of errors rather
+// than a boolean?
 /// A trait that defines a `ValueObject` which is an immutable holder of value, that validates that value
 /// against certain conditions before storing it.
 ///
@@ -113,8 +115,8 @@ pub trait AggregateRoot: Entity {
 ///         email_rx.is_match(value)
 ///     }
 ///
-///     fn value(&self) -> String {
-///         return self.value.clone();
+///     fn value(&self) -> &String {
+///         return &self.value
 ///     }
 /// }
 ///
@@ -134,8 +136,7 @@ pub trait ValueObject<T>: Clone + PartialEq + TryFrom<T> + Display {
     /// Note: `validate` should be called by your implementation of `try_from`.
     fn validate(value: &T) -> bool;
 
-    // TODO: This should be a ref like most getters
-    /// `value` return a copy of the internal value held in the value object. This should be the only
+    /// `value` return a reference to the internal value held in the value object. This should be the only
     /// way that we access the internal data.  Mutation methods should always generate a new value object.
-    fn value(&self) -> T;
+    fn value(&self) -> &T;
 }
