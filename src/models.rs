@@ -72,7 +72,7 @@ pub trait AggregateRoot: Entity {
 ///
 /// #[derive(Clone, PartialEq)]
 /// struct Email {
-///     address: String,
+///     value: String,
 /// }
 ///
 /// #[derive(Debug, Clone)]
@@ -99,7 +99,7 @@ pub trait AggregateRoot: Entity {
 ///         }
 ///
 ///         Ok(Email {
-///             address: value
+///             value,
 ///         })
 ///     }
 /// }
@@ -114,13 +114,13 @@ pub trait AggregateRoot: Entity {
 ///     }
 ///
 ///     fn value(&self) -> String {
-///         return self.address.clone();
+///         return self.value.clone();
 ///     }
 /// }
 ///
 /// impl fmt::Display for Email {
 ///     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
-///         write!(f, "{}", self.address)
+///         write!(f, "{}", self.value)
 ///     }
 /// }
 ///
