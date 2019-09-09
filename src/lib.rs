@@ -275,9 +275,9 @@ pub fn value_object_derive(input: TokenStream) -> TokenStream {
         }
 
         impl std::convert::TryFrom<#type_name> for #name {
-            type Error = Error;
+            type Error = crate::Error;
 
-            fn try_from(value: #type_name) -> Result<Self, Self::Error> {
+            fn try_from(value: #type_name) -> std::result::Result<Self, Self::Error> {
                 Self::validate(&value)?;
 
                 Ok(#name {
