@@ -1,6 +1,9 @@
 #[macro_use]
 extern crate domain_derive;
 
+#[macro_use]
+extern crate failure;
+
 use domain_patterns::collections::*;
 pub mod common;
 use common::*;

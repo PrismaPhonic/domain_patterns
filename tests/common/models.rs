@@ -9,13 +9,26 @@ pub struct Email {
     pub value: String,
 }
 
+#[derive(Clone, Eq, PartialEq, Debug, Fail)]
+pub enum ValidationError {
+    #[fail(display = "Email failed to validate.")]
+    EmailValidationError,
+}
+
+
 impl ValueObject<String> for Email {
-    fn validate(value: &String) -> bool {
+    type ValueError = ValidationError;
+
+    fn validate(value: &String) -> Result<(), ValidationError> {
         let email_rx = Regex::new(
             r"^(?i)[a-z0-9.!#$%&'*+/=?^_`{|}~-]+@[a-z0-9](?:[a-z0-9-]{0,61}[a-z0-9])?(?:.[a-z0-9](?:[a-z0-9-]{0,61}[a-z0-9])?)*$"
         ).unwrap();
 
-        email_rx.is_match(value)
+        if !email_rx.is_match(value) {
+            return Err(ValidationError::EmailValidationError);
+        }
+
+        Ok(())
     }
 
     fn value(&self) -> String {
@@ -37,7 +50,7 @@ impl AggregateRoot for NaiveUser {
 }
 
 impl NaiveUser {
-    pub fn new(user_id: Uuid, first_name: String, last_name: String, email: String) -> Result<NaiveUser, EmailValidationError> {
+    pub fn new(user_id: Uuid, first_name: String, last_name: String, email: String) -> Result<NaiveUser, ValidationError> {
         Ok(NaiveUser {
             id: user_id,
             version: 0,

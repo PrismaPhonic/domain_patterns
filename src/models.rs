@@ -93,7 +93,7 @@ pub trait AggregateRoot: Entity {
 /// }
 ///
 /// impl TryFrom<String> for Email {
-///     type Error = Self::ValueError;
+///     type Error = EmailValidationError;
 ///
 ///     fn try_from(value: String) -> Result<Self, Self::Error> {
 ///         Self::validate(&value)?;

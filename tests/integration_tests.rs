@@ -1,6 +1,9 @@
 #[macro_use]
 extern crate domain_derive;
 
+#[macro_use]
+extern crate failure;
+
 use domain_patterns::collections::*;
 mod common;
 use common::*;
@@ -91,27 +94,27 @@ fn test_get_paged() {
     assert_eq!(results.len(), 2)
 }
 
-#[test]
-#[allow(unused)]
-fn test_survey_command() {
-    let user_id1 = Uuid::new_v4();
-    let test_user1 = common::create_test_user(&user_id1);
-    let mut user_repo = MockUserRepository::new();
-
-    let new_id = Uuid::new_v4();
-
-    let create_user_command = CreateUserCommand {
-        id: new_id.clone(),
-        first_name: "test_first".to_string(),
-        last_name: "test_last".to_string(),
-        email: "email@email.com".to_string()
-    };
-
-    let user_command_handler = CreateUserCommandHandler::new(user_repo);
-    let mut command_gateway = CommandGateway::new();
-
-    command_gateway.register(user_command_handler);
-    command_gateway.handle(create_user_command);
-
-    assert!(command_gateway.contains_key("CreateUserCommand".to_string()));
-}
+//#[test]
+//#[allow(unused)]
+//fn test_survey_command() {
+//    let user_id1 = Uuid::new_v4();
+//    let test_user1 = common::create_test_user(&user_id1);
+//    let mut user_repo = MockUserRepository::new();
+//
+//    let new_id = Uuid::new_v4();
+//
+//    let create_user_command = CreateUserCommand {
+//        id: new_id.clone(),
+//        first_name: "test_first".to_string(),
+//        last_name: "test_last".to_string(),
+//        email: "email@email.com".to_string()
+//    };
+//
+//    let user_command_handler = CreateUserCommandHandler::new(user_repo);
+//    let mut command_gateway = CommandGateway::new();
+//
+//    command_gateway.register(user_command_handler);
+//    command_gateway.handle(create_user_command);
+//
+//    assert!(command_gateway.contains_key("CreateUserCommand".to_string()));
+//}

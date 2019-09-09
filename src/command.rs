@@ -13,7 +13,9 @@ pub trait Command {
 /// NOTE: THIS IS A WORK IN PROGRESS AND NOT READY FOR USE.
 /// Command handler will handle a single command only.
 pub trait CommandHandler<T: Command> {
-    fn handle(&mut self, command: T) -> Result<(), Box<dyn Error>>;
+    type Error;
+
+    fn handle(&mut self, command: T) -> Result<(), Self::Error>;
 
     fn handles(&self) -> String;
 }
@@ -21,7 +23,9 @@ pub trait CommandHandler<T: Command> {
 /// NOTE: THIS IS A WORK IN PROGRESS AND NOT READY FOR USE.
 /// For use in downcasting in incoming command into a specific type for CommandHandler.
 pub trait GenericHandler {
-    fn handle(&mut self, command: Box<dyn Any>) -> Result<(), Box<dyn Error>>;
+    type Error;
+
+    fn handle(&mut self, command: Box<dyn Any>) -> Result<(), Self::Error>;
 
     fn handles(&self) -> String;
 }
@@ -30,9 +34,11 @@ pub trait GenericHandler {
 /// NOTE: THIS IS A WORK IN PROGRESS AND NOT READY FOR USE.
 /// Handles all commands for a given system, including command registration.
 pub trait MassHandler {
-    fn handle<T: Command + 'static>(&mut self, command: T) -> Result<(), Box<dyn Error>>;
+    type Error;
 
-    fn register<T: Command + 'static, U: CommandHandler<T> + 'static>(&mut self, handler: U) -> Result<(), Box<dyn Error>>;
+    fn handle<T: Command + 'static>(&mut self, command: T) -> Result<(), Self::Error>;
+
+    fn register<T: Command + 'static, U: CommandHandler<T> + 'static>(&mut self, handler: U) -> Result<(), Self::Error>;
 }
 
 

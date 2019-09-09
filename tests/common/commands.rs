@@ -4,7 +4,7 @@ use std::error::Error;
 use std::collections::HashMap;
 use domain_patterns::collections::Repository;
 use uuid::Uuid;
-use crate::common::{MockUserRepository, NaiveUser};
+use crate::common::{MockUserRepository, NaiveUser, ValidationError};
 
 pub struct GenericHandle<T: Command + 'static>(Box<dyn CommandHandler<T>>);
 
@@ -50,7 +50,10 @@ impl CreateUserCommandHandler {
 }
 
 impl CommandHandler<CreateUserCommand> for CreateUserCommandHandler {
-    fn handle(&mut self, command: CreateUserCommand) -> Result<(), Box<dyn Error>> {
+    // TODO: This is not accurate to what we would do in the real world.  make failure root node and use that
+    type Error = ValidationError;
+
+    fn handle(&mut self, command: CreateUserCommand) -> Result<(), Self::Error> {
         let user = NaiveUser::new(command.id, command.first_name, command.last_name, command.email)?;
         self.repo.insert(&user);
 
@@ -68,12 +71,14 @@ pub struct CommandGateway {
 }
 
 impl MassHandler for CommandGateway {
-    fn handle<T: Command + 'static>(&mut self, command: T) -> Result<(), Box<dyn Error>> {
+    type Error = ValidationError;
+
+    fn handle<T: Command + 'static>(&mut self, command: T) -> Result<(), Self::Error> {
         self.handlers.get_mut(&command.kind()).unwrap().handle(Box::new(command));
         Ok(())
     }
 
-    fn register<T: Command + 'static, U: CommandHandler<T> + 'static>(&mut self, handler: U) -> Result<(), Box<dyn Error>> {
+    fn register<T: Command + 'static, U: CommandHandler<T> + 'static>(&mut self, handler: U) -> Result<(), Self::Error> {
         self.handlers.insert(handler.handles(), Box::new(GenericHandle(Box::new(handler))));
         Ok(())
     }
