@@ -217,7 +217,8 @@ pub fn entity_derive(input: TokenStream) -> TokenStream {
 /// }
 ///
 /// impl ValueObject<String> for Email {
-///     type ValueError = EmailValidationError;
+///     // This error would be the root error for the crate, using failure most likely.
+///     type ValueError = Error;
 ///
 ///     fn validate(value: &String) -> Result<(), Self::ValueError> {
 ///         let email_rx = Regex::new(
@@ -274,7 +275,7 @@ pub fn value_object_derive(input: TokenStream) -> TokenStream {
         }
 
         impl std::convert::TryFrom<#type_name> for #name {
-            type Error = ValidationError;
+            type Error = Error;
 
             fn try_from(value: #type_name) -> Result<Self, Self::Error> {
                 Self::validate(&value)?;

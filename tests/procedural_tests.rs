@@ -41,13 +41,13 @@ pub struct Email {
 }
 
 #[derive(Clone, Eq, PartialEq, Debug, Fail)]
-pub enum ValidationError {
+pub enum Error {
     #[fail(display = "Email failed to validate.")]
     EmailValidationError,
 }
 
 impl ValueObject<String> for Email {
-    type ValueError = ValidationError;
+    type ValueError = Error;
 
     fn validate(value: &String) -> Result<(), Self::ValueError> {
         let email_rx = Regex::new(
@@ -55,7 +55,7 @@ impl ValueObject<String> for Email {
         ).unwrap();
 
         if !email_rx.is_match(value) {
-            return Err(ValidationError::EmailValidationError)
+            return Err(Error::EmailValidationError)
         }
 
         Ok(())
