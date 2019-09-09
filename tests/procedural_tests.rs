@@ -1,6 +1,9 @@
 #[macro_use]
 extern crate domain_derive;
 
+#[macro_use]
+extern crate failure;
+
 use domain_patterns::models::{Entity, ValueObject};
 use domain_patterns::event::{DomainEvent,DomainEvents};
 use serde::{Serialize, Deserialize};
@@ -32,19 +35,30 @@ pub mod entity {
     }
 }
 
-
 #[derive(ValueSetup)]
 pub struct Email {
     pub value: String,
 }
 
+#[derive(Clone, Eq, PartialEq, Debug, Fail)]
+pub enum ValidationError {
+    #[fail(display = "Email failed to validate.")]
+    EmailValidationError,
+}
+
 impl ValueObject<String> for Email {
-    fn validate(value: &String) -> bool {
+    type ValueError = ValidationError;
+
+    fn validate(value: &String) -> Result<(), Self::ValueError> {
         let email_rx = Regex::new(
             r"^(?i)[a-z0-9.!#$%&'*+/=?^_`{|}~-]+@[a-z0-9](?:[a-z0-9-]{0,61}[a-z0-9])?(?:.[a-z0-9](?:[a-z0-9-]{0,61}[a-z0-9])?)*$"
         ).unwrap();
 
-        email_rx.is_match(value)
+        if !email_rx.is_match(value) {
+            return Err(ValidationError::EmailValidationError)
+        }
+
+        Ok(())
     }
 
     fn value(&self) -> String {

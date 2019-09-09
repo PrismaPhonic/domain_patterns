@@ -217,12 +217,18 @@ pub fn entity_derive(input: TokenStream) -> TokenStream {
 /// }
 ///
 /// impl ValueObject<String> for Email {
-///     fn validate(value: &String) -> bool {
+///     type ValueError = EmailValidationError;
+///
+///     fn validate(value: &String) -> Result<(), Self::ValueError> {
 ///         let email_rx = Regex::new(
 ///             r"^(?i)[a-z0-9.!#$%&'*+/=?^_`{|}~-]+@[a-z0-9](?:[a-z0-9-]{0,61}[a-z0-9])?(?:.[a-z0-9](?:[a-z0-9-]{0,61}[a-z0-9])?)*$"
 ///         ).unwrap();
 ///
-///         email_rx.is_match(value)
+///         if !email_rx.is_match(value) {
+///             return Err(EmailValidationError)
+///         }
+///
+///         Ok(())
 ///     }
 ///
 ///     fn value(&self) -> &String {
@@ -243,7 +249,8 @@ pub fn value_object_derive(input: TokenStream) -> TokenStream {
     // safe to unwrap because we check for existence of value field in precondition.
     let type_name = &value_object::value_type_name(&input.data).unwrap();
 
-    let error_struct_name = &value_object::error_name_from_type(name, input.span());
+    // TODO: Likely remove this, as we use a parent enum now which is predicatably named.
+    // let error_struct_name = &value_object::error_name_from_type(name, input.span());
 
     let expanded = quote! {
         impl std::fmt::Display for #name {
@@ -266,28 +273,11 @@ pub fn value_object_derive(input: TokenStream) -> TokenStream {
             }
         }
 
-        #[derive(Debug)]
-        pub struct #error_struct_name;
-
-        impl std::fmt::Display for #error_struct_name {
-            fn fmt(&self, f: &mut std::fmt::Formatter) -> std::fmt::Result {
-                write!(f, "{} failed to validate.", #name_str)
-            }
-        }
-
-        impl std::error::Error for #error_struct_name {
-            fn source(&self) -> Option<&(dyn std::error::Error + 'static)> {
-                None
-            }
-        }
-
         impl std::convert::TryFrom<#type_name> for #name {
-            type Error = #error_struct_name;
+            type Error = ValidationError;
 
             fn try_from(value: #type_name) -> Result<Self, Self::Error> {
-                if !Self::validate(&value) {
-                    return Err(#error_struct_name)
-                }
+                Self::validate(&value)?;
 
                 Ok(#name {
                     value,
