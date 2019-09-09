@@ -2,7 +2,7 @@ use std::collections::HashMap;
 use domain_patterns::models::Entity;
 use domain_patterns::collections::{Repository, EventRepository};
 use std::{fmt, error};
-use crate::common::{NaiveUser, UserEventRecord, UserEvents};
+use crate::common::{NaiveUser, UserEventRecord, UserEvents, Error};
 
 // for naive testing
 pub struct MockUserRepository {
@@ -17,26 +17,8 @@ impl MockUserRepository {
     }
 }
 
-#[derive(Debug, Clone)]
-pub struct MockDbError;
-
-impl fmt::Display for MockDbError {
-    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
-        write!(f, "Something went wrong at db.")
-    }
-}
-
-impl error::Error for MockDbError {
-    fn source(&self) -> Option<&(dyn error::Error + 'static)> {
-        // Generic error, underlying cause isn't tracked.
-        None
-    }
-}
-
 impl Repository<NaiveUser> for MockUserRepository {
-    type Error = MockDbError;
-
-    fn insert(&mut self, entity: &NaiveUser) -> Result<Option<NaiveUser>, Self::Error> {
+    fn insert(&mut self, entity: &NaiveUser) -> Result<Option<NaiveUser>, Error> {
         let key = entity.id();
 
         let result = if self.contains_key(&key).unwrap() {
@@ -49,7 +31,7 @@ impl Repository<NaiveUser> for MockUserRepository {
         Ok(result)
     }
 
-    fn get(&self, key: &String) -> Result<Option<NaiveUser>, Self::Error> {
+    fn get(&self, key: &String) -> Result<Option<NaiveUser>, Error> {
         let result = if let Some(user) = self.data.get(key) {
             Some(user.clone())
         } else {
@@ -58,7 +40,7 @@ impl Repository<NaiveUser> for MockUserRepository {
         Ok(result)
     }
 
-    fn get_paged(&self, page_num: usize, page_size: usize) -> Result<Vec<NaiveUser>, Self::Error> {
+    fn get_paged(&self, page_num: usize, page_size: usize) -> Result<Vec<NaiveUser>, Error> {
         let entire_collection: Vec<NaiveUser> = self.data
             .iter()
             .map(|(_, u)| {
@@ -81,7 +63,7 @@ impl Repository<NaiveUser> for MockUserRepository {
         Ok(result)
     }
 
-    fn update(&mut self, entity: &NaiveUser) -> Result<Option<NaiveUser>, Self::Error> {
+    fn update(&mut self, entity: &NaiveUser) -> Result<Option<NaiveUser>, Error> {
         let key = entity.id();
 
         let result = if self.contains_key(&key).unwrap() {
@@ -94,7 +76,7 @@ impl Repository<NaiveUser> for MockUserRepository {
         Ok(result)
     }
 
-    fn remove(&mut self, key: &String) -> Result<Option<NaiveUser>, Self::Error> {
+    fn remove(&mut self, key: &String) -> Result<Option<NaiveUser>, Error> {
         let result = self.data.remove(key);
         Ok(result)
     }

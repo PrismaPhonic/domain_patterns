@@ -2,30 +2,25 @@ use domain_patterns::models::{ValueObject, AggregateRoot, Entity};
 use regex::Regex;
 use std::convert::TryFrom;
 use uuid::Uuid;
-use crate::common::{UserEvents, UserCreatedEvent};
+use crate::common::{UserEvents, UserCreatedEvent, Error};
 
 #[derive(ValueSetup)]
 pub struct Email {
     pub value: String,
 }
 
-#[derive(Clone, Eq, PartialEq, Debug, Fail)]
-pub enum ValidationError {
-    #[fail(display = "Email failed to validate.")]
-    EmailValidationError,
-}
 
 
 impl ValueObject<String> for Email {
-    type ValueError = ValidationError;
+    type ValueError = Error;
 
-    fn validate(value: &String) -> Result<(), ValidationError> {
+    fn validate(value: &String) -> Result<(), Error> {
         let email_rx = Regex::new(
             r"^(?i)[a-z0-9.!#$%&'*+/=?^_`{|}~-]+@[a-z0-9](?:[a-z0-9-]{0,61}[a-z0-9])?(?:.[a-z0-9](?:[a-z0-9-]{0,61}[a-z0-9])?)*$"
         ).unwrap();
 
         if !email_rx.is_match(value) {
-            return Err(ValidationError::EmailValidationError);
+            return Err(Error::EmailError);
         }
 
         Ok(())
@@ -47,10 +42,12 @@ pub struct NaiveUser {
 
 impl AggregateRoot for NaiveUser {
     type Events = UserEvents;
+
+    type Error = Error;
 }
 
 impl NaiveUser {
-    pub fn new(user_id: Uuid, first_name: String, last_name: String, email: String) -> Result<NaiveUser, ValidationError> {
+    pub fn new(user_id: Uuid, first_name: String, last_name: String, email: String) -> Result<NaiveUser, Error> {
         Ok(NaiveUser {
             id: user_id,
             version: 0,

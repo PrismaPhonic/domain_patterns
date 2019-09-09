@@ -57,6 +57,9 @@ pub trait Entity: PartialEq {
 pub trait AggregateRoot: Entity {
     /// This type alias should point to an enum of events that the aggregate root will create and publish.
     type Events: DomainEvents;
+
+    /// This type alias should point to the root error type for the crate.
+    type Error;
 }
 
 // TODO: Improve error handling situation for ValueObjects.  Maybe validate should return a list of errors rather
