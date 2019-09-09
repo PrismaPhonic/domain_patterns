@@ -93,12 +93,10 @@ pub trait AggregateRoot: Entity {
 /// }
 ///
 /// impl TryFrom<String> for Email {
-///     type Error = EmailValidationError;
+///     type Error = Self::ValueError;
 ///
 ///     fn try_from(value: String) -> Result<Self, Self::Error> {
-///         if !Self::validate(&value) {
-///             return Err(EmailValidationError);
-///         }
+///         Self::validate(&value)?;
 ///
 ///         Ok(Email {
 ///             value,
@@ -107,12 +105,18 @@ pub trait AggregateRoot: Entity {
 /// }
 ///
 /// impl ValueObject<String> for Email {
-///     fn validate(value: &String) -> bool {
+///     type ValueError = EmailValidationError;
+///
+///     fn validate(value: &String) -> Result<(), EmailValidationError> {
 ///         let email_rx = Regex::new(
 ///             r"^(?i)[a-z0-9.!#$%&'*+/=?^_`{|}~-]+@[a-z0-9](?:[a-z0-9-]{0,61}[a-z0-9])?(?:.[a-z0-9](?:[a-z0-9-]{0,61}[a-z0-9])?)*$"
 ///         ).unwrap();
 ///
-///         email_rx.is_match(value)
+///         if !email_rx.is_match(value) {
+///             return Err(EmailValidationError);
+///         }
+///
+///         Ok(())
 ///     }
 ///
 ///     fn value(&self) -> String {
@@ -129,12 +133,15 @@ pub trait AggregateRoot: Entity {
 /// let email = Email::try_from("test_email@email.com".to_string()).unwrap();
 /// ```
 pub trait ValueObject<T>: Clone + PartialEq + TryFrom<T> + Display {
+    /// ValueError defines an error type that communicates there was a problem with validation.
+    type ValueError;
+
     /// `validate` takes in incoming data used to construct the value object, and validates it against
     /// given constraints.  An example would be if we had an `Email` struct that implements `ValueObject`.
     /// The constraints we would check would ensure that the incoming data is a valid email address.
     ///
     /// Note: `validate` should be called by your implementation of `try_from`.
-    fn validate(value: &T) -> bool;
+    fn validate(value: &T) -> Result<(), Self::ValueError>;
 
     /// `value` return a reference to the internal value held in the value object. This should be the only
     /// way that we access the internal data.  Mutation methods should always generate a new value object.
