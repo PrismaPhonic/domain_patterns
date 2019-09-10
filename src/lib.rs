@@ -342,6 +342,8 @@ pub fn domain_event_derive(input: TokenStream) -> TokenStream {
                 self.version as u64
             }
         }
+
+        impl Message for #name {}
     };
 
     TokenStream::from(expanded)
@@ -383,6 +385,7 @@ pub fn domain_events_derive(input: TokenStream) -> TokenStream {
 
     let expanded = quote! {
         impl DomainEvents for #name {}
+        impl Messages for #name {}
     };
 
     TokenStream::from(expanded)
