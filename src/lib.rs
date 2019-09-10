@@ -349,44 +349,45 @@ pub fn domain_event_derive(input: TokenStream) -> TokenStream {
     TokenStream::from(expanded)
 }
 
-/// The `DomainEvents` macro should be applied to an enum that holds variants which are all Domain Events.
-/// This is a very thin wrapper, and all the macro does is check that the structure is an enum, and then applies
-/// the trait, which has no methods.
-///
-/// ```edition2018
-/// #[macro_use]
-/// extern crate domain_derive;
-///
-/// use uuid::Uuid;
-/// use domain_patterns::event::{DomainEvent, DomainEvents};
-///
-/// #[derive(Serialize, Clone, DomainEvent)]
-/// pub struct FirstNameUpdatedEvent {
-///     pub id: Uuid,
-///     pub aggregate_id: String,
-///     pub first_name: String,
-///     pub version: u64,
-///     pub occurred: i64,
-/// }
-///
-/// #[derive(Clone, DomainEvents)]
-/// pub enum UserEvents {
-///     FirstNameUpdated(FirstNameUpdatedEvent),
-/// }
-/// ```
-#[proc_macro_derive(DomainEvents)]
-pub fn domain_events_derive(input: TokenStream) -> TokenStream {
-    let input: DeriveInput = parse_macro_input!(input as DeriveInput);
-
-    // Struct name
-    let name = &input.ident;
-
-    domain_events::precondition(&input).expect("DomainEvents macro failed preconditions");
-
-    let expanded = quote! {
-        impl DomainEvents for #name {}
-        impl Messages for #name {}
-    };
-
-    TokenStream::from(expanded)
-}
+//// TODO: COMMENTING OUT FOR NOW.  This should implement DomainEvent on an enum, where we match and call
+//// internal.
+///// The `DomainEvents` macro should be applied to an enum that holds variants which are all Domain Events.
+///// This is a very thin wrapper, and all the macro does is check that the structure is an enum, and then applies
+///// the trait, which has no methods.
+/////
+///// ```edition2018
+///// #[macro_use]
+///// extern crate domain_derive;
+/////
+///// use uuid::Uuid;
+///// use domain_patterns::event::{DomainEvent, DomainEvents};
+/////
+///// #[derive(Serialize, Clone, DomainEvent)]
+///// pub struct FirstNameUpdatedEvent {
+/////     pub id: Uuid,
+/////     pub aggregate_id: String,
+/////     pub first_name: String,
+/////     pub version: u64,
+/////     pub occurred: i64,
+///// }
+/////
+///// #[derive(Clone, DomainEvents)]
+///// pub enum UserEvents {
+/////     FirstNameUpdated(FirstNameUpdatedEvent),
+///// }
+///// ```
+//#[proc_macro_derive(DomainEvents)]
+//pub fn domain_events_derive(input: TokenStream) -> TokenStream {
+//    let input: DeriveInput = parse_macro_input!(input as DeriveInput);
+//
+//    // Struct name
+//    let name = &input.ident;
+//
+//    domain_events::precondition(&input).expect("DomainEvents macro failed preconditions");
+//
+//    let expanded = quote! {
+//        impl DomainEvent for #name {}
+//    };
+//
+//    TokenStream::from(expanded)
+//}
