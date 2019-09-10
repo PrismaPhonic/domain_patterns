@@ -30,6 +30,7 @@ pub trait DomainEvent: Message {
     fn version(&self) -> u64;
 }
 
+// TODO: Remove this and change design so the enum implements DomainEvent and does matching to call internal methods on each variant.
 /// DomainEvents is a thin wrapper over an enum that contains all generics that implement `DomainEvent` trait.
 /// As far as I can tell there's no way to constrain that all variants of an enum enforce the same trait.
 ///

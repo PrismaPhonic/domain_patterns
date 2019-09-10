@@ -8,6 +8,9 @@ pub enum ErrorKind {
 
     #[fail(display = "Something went wrong with the database.")]
     MockDbError,
+
+    #[fail(display = "Could not find that resource.")]
+    NotFound,
 }
 // An error that can occur while using the survey manager.
 #[derive(Debug)]

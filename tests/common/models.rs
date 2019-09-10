@@ -64,6 +64,15 @@ impl NaiveUser {
         let _created_event = UserCreatedEvent::new(self);
         // would publish event here - maybe create a mock bus for demonstration purposes.
     }
+
+    pub fn change_email(&mut self, new_email: &String) -> Result<(), Error> {
+        self.email = Email::try_from(new_email.clone())?;
+        self.version = self.next_version();
+        let _created_event = UserCreatedEvent::new(self);
+        // would publish event here - maybe create a mock bus for demonstration purposes.
+
+        Ok(())
+    }
 }
 
 pub fn create_test_user(user_id: &Uuid) -> NaiveUser {

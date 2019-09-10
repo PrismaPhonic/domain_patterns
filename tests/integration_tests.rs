@@ -8,7 +8,7 @@ use domain_patterns::collections::*;
 mod common;
 use common::*;
 use uuid::Uuid;
-use domain_patterns::command::{Command, Commands, Handles, HandlesAll};
+use domain_patterns::command::{Command, Handles};
 
 #[test]
 #[allow(unused)]
@@ -110,7 +110,7 @@ fn test_survey_command() {
         email: "email@email.com".to_string()
     };
 
-    let mut user_command_handler = CreateUserCommandHandler::new(user_repo);
+    let mut user_command_handler = UserCommandsHandler::new(user_repo);
     user_command_handler.handle(&create_user_command).unwrap();
 
     assert!(user_command_handler.contains_key(&new_id.to_string()))
