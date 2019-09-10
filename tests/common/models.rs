@@ -3,6 +3,7 @@ use regex::Regex;
 use std::convert::TryFrom;
 use uuid::Uuid;
 use crate::common::{UserEvents, UserCreatedEvent, Error};
+use crate::common::ErrorKind::EmailError;
 
 #[derive(ValueSetup)]
 pub struct Email {
@@ -20,7 +21,7 @@ impl ValueObject<String> for Email {
         ).unwrap();
 
         if !email_rx.is_match(value) {
-            return Err(Error::EmailError);
+            return Err(EmailError.into());
         }
 
         Ok(())

@@ -10,6 +10,5 @@ pub use collections::*;
 pub mod errors;
 pub use errors::*;
 
-// Commenting out for now, in broken state.
-// pub mod commands;
-// pub use commands::*;
+ pub mod commands;
+ pub use commands::*;

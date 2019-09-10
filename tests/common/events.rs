@@ -1,5 +1,6 @@
 use domain_patterns::models::Entity;
 use domain_patterns::event::{DomainEvent, DomainEvents};
+use domain_patterns::message::{Message, Messages};
 use chrono::Utc;
 use serde::{Serialize, Deserialize};
 use uuid::Uuid;
