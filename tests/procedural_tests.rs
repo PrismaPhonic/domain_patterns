@@ -5,6 +5,7 @@ extern crate domain_derive;
 extern crate failure;
 
 use domain_patterns::models::{Entity, ValueObject};
+use domain_patterns::message::Message;
 use domain_patterns::event::{DomainEvent,DomainEvents};
 use serde::{Serialize, Deserialize};
 use uuid::Uuid;
@@ -75,9 +76,19 @@ pub struct FirstNameUpdatedEvent {
     pub occurred: i64,
 }
 
+#[derive(Serialize, Deserialize, Clone, DomainEvent)]
+pub struct EmailUpdatedEvent {
+    pub id: Uuid,
+    pub aggregate_id: String,
+    pub email: String,
+    pub version: u64,
+    pub occurred: i64,
+}
+
 #[derive(Clone, DomainEvents)]
 pub enum UserEvents {
     FirstNameUpdated(FirstNameUpdatedEvent),
+    EmailUpdated(EmailUpdatedEvent),
 }
 
 //// UNCOMMENT THIS TO CHECK FOR COMPILE TIME FAILIURE.
@@ -122,4 +133,29 @@ fn domain_event_macro_works() {
         occurred: 120984128912,
     };
     assert_eq!(&updated_event.aggregate_id, &updated_event.aggregate_id());
+}
+
+#[test]
+fn domain_events_macro_works() {
+    let updated_event = FirstNameUpdatedEvent {
+        aggregate_id: Uuid::new_v4().to_string(),
+        first_name: "new_name".to_string(),
+        version: 1,
+        id: Uuid::new_v4(),
+        occurred: 120984128912,
+    };
+    let user_event = UserEvents::FirstNameUpdated(updated_event);
+    let updated_event2 = EmailUpdatedEvent {
+        aggregate_id: Uuid::new_v4().to_string(),
+        email: "new_email".to_string(),
+        version: 2,
+        id: Uuid::new_v4(),
+        occurred: 1209841289888,
+    };
+    let user_event2 = UserEvents::EmailUpdated(updated_event2);
+
+    assert_eq!(user_event.version(), 1);
+    assert_eq!(user_event.occurred(), 120984128912);
+    assert_eq!(user_event2.version(), 2);
+    assert_eq!(user_event2.occurred(), 1209841289888);
 }

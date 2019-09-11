@@ -133,6 +133,7 @@ mod type_checks;
 use crate::proc_macro::TokenStream;
 use syn::DeriveInput;
 use syn::spanned::Spanned;
+use crate::domain_events::create_inner_match_for_getter;
 
 /// The `Entity` derive macro can be used to automatically implement all methods of the `Entity` trait
 /// from the `domain_patterns` crate.  This only works if certain preconditions are met:
@@ -385,8 +386,32 @@ pub fn domain_events_derive(input: TokenStream) -> TokenStream {
 
     domain_events::precondition(&input).expect("DomainEvents macro failed preconditions");
 
+    // Get match statements for each function, so we automatically call function of inner variant.
+    let occurred_match = create_inner_match_for_getter(&input, "occurred".to_string());
+    let id_match = create_inner_match_for_getter(&input, "id".to_string());
+    let aggregate_id_match = create_inner_match_for_getter(&input, "aggregate_id".to_string());
+    let version_match = create_inner_match_for_getter(&input, "version".to_string());
+
     let expanded = quote! {
-        impl DomainEvents for #name {}
+        impl DomainEvent for #name {
+            fn occurred(&self) -> i64 {
+                #occurred_match
+            }
+
+            fn id(&self) -> String {
+                #id_match
+            }
+
+            fn aggregate_id(&self) -> String {
+                #aggregate_id_match
+            }
+
+            fn version(&self) -> u64 {
+                #version_match
+            }
+        }
+
+        impl Message for #name {}
     };
 
     TokenStream::from(expanded)
