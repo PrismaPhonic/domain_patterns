@@ -1,6 +1,6 @@
 use std::convert::TryFrom;
 use std::fmt::Display;
-use crate::event::DomainEvents;
+use crate::event::DomainEvent;
 
 /// A trait that defines an `Entity`, which is any object with a unique and globally persistent identity.
 ///
@@ -56,7 +56,7 @@ pub trait Entity: PartialEq {
 
 pub trait AggregateRoot: Entity {
     /// This type alias should point to an enum of events that the aggregate root will create and publish.
-    type Events: DomainEvents;
+    type Events: DomainEvent;
 
     /// This type alias should point to the root error type for the crate.
     type Error;

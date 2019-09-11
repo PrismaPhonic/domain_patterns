@@ -1,14 +1,14 @@
 use crate::message::Message;
 
-/// NOTE: THIS IS A WORK IN PROGRESS AND NOT READY FOR USE.
 /// Command is a simple marker trait for command structs.  These are commands that are issued and handled
 /// by a command handler.  They are things we can say "no" to.
-pub trait Command: Message {
-    fn kind(&self) -> &'static str;
-}
+pub trait Command: Message {}
 
-/// NOTE: THIS IS A WORK IN PROGRESS AND NOT READY FOR USE.
-/// Command handler will handle a single command only.
+/// Command handler will handle any generic message.  This could be used in a 1:1 fashion, with only
+/// one handler per command, or you could implement this on a single handler that handles multiple messages,
+/// and lastly implement it on an enum that holds variants of those same commands.  The enum implementation
+/// can simply match on self, and then call .handle which will use the incoming variant type to call the appropriate
+/// generic Handles implementation.
 pub trait Handles<T: Message> {
     type Error;
 

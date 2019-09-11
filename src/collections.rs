@@ -120,7 +120,13 @@ pub trait ReadRepository<T: AggregateRoot> {
 /// EventRepository is a trait that provides collection like semantics over event storage and retrival.  The
 /// implementor may choose to persist and retrieve events from any storage mechanism of their choosing.
 pub trait EventRepository {
-    type Events: DomainEvents;
+    /// Events should likely be pointed at an enum that holds domain event variants.  All variants should
+    /// implement DomainEvent trait, and the enum itself should also implement DomainEvent trait.
+    /// This is trivial if you're using the domain_derive crate, in which case you can simply use the
+    /// DomainEvent macro on each DomainEvent, and then the DomainEvents macro on the enum holding
+    /// you DomainEvent variants.
+    type Events: DomainEvent;
+
     /// events_by_aggregate returns a vector of pointers to events filtered by the supplied
     /// aggregate id.
     fn events_by_aggregate(&self, aggregate_id: &String) -> Option<Vec<Self::Events>>;
