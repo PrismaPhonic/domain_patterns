@@ -1,5 +1,5 @@
 use domain_patterns::models::Entity;
-use domain_patterns::event::{DomainEvent, DomainEvents};
+use domain_patterns::event::DomainEvent;
 use domain_patterns::message::Message;
 use chrono::Utc;
 use serde::{Serialize, Deserialize};

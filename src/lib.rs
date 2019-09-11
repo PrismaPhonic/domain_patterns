@@ -53,7 +53,6 @@ pub mod collections;
 pub mod event;
 
 /// Command module holds traits relevant to marking commands, as well as command handler traits.
-/// NOTE: THIS IS A WORK IN PROGRESS AND NOT READY FOR USE.
 pub mod command;
 
 /// Message module holds a single marker trait that is shared by both commands and events, so command handlers can handle both commands and events.

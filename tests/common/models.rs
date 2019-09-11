@@ -10,8 +10,6 @@ pub struct Email {
     pub value: String,
 }
 
-
-
 impl ValueObject<String> for Email {
     type ValueError = Error;
 

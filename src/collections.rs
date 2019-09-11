@@ -1,6 +1,6 @@
 use crate::models::AggregateRoot;
 use std::error::Error;
-use crate::event::DomainEvents;
+use crate::event::DomainEvent;
 
 /// A trait that provides a collection like abstraction over database access.
 ///
