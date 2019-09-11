@@ -350,8 +350,6 @@ pub fn domain_event_derive(input: TokenStream) -> TokenStream {
     TokenStream::from(expanded)
 }
 
-// TODO: This should implement DomainEvent on an enum, where we match and call
-// internal.
 /// The `DomainEvents` macro should be applied to an enum that holds variants which are all Domain Events.
 /// This is a very thin wrapper, and all the macro does is check that the structure is an enum, and then applies
 /// the trait, which has no methods.
@@ -411,6 +409,25 @@ pub fn domain_events_derive(input: TokenStream) -> TokenStream {
             }
         }
 
+        impl Message for #name {}
+    };
+
+    TokenStream::from(expanded)
+}
+
+/// The `Command` derive macro can be used to automatically implement the Command and Message marker traits
+/// from the `domain_patterns` crate.
+#[proc_macro_derive(Command)]
+pub fn command_derive(input: TokenStream) -> TokenStream {
+    let input: DeriveInput = parse_macro_input!(input as DeriveInput);
+
+    // No precondition checks that I can think of since these are just simple marker traits
+
+    // Struct name
+    let name = &input.ident;
+
+    let expanded = quote! {
+        impl Command for #name {}
         impl Message for #name {}
     };
 
