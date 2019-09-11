@@ -6,7 +6,7 @@ extern crate failure;
 
 use domain_patterns::models::{Entity, ValueObject};
 use domain_patterns::message::Message;
-use domain_patterns::event::{DomainEvent,DomainEvents};
+use domain_patterns::event::DomainEvent;
 use serde::{Serialize, Deserialize};
 use uuid::Uuid;
 use std::convert::TryFrom;
