@@ -1,0 +1,37 @@
+[package]
+name = "domain_derive"
+description = "domain_derive holds derive macros for the domain_patterns crate."
+documentation = "https://docs.rs/domain_derive"
+readme = "README.md"
+repository = "https://github.com/prismaphonic/domain_derive"
+keywords = ["domain", "design", "patterns", "database", "architecture"]
+categories = ["database", "data-structures", "rust-patterns"]
+license = "MIT"
+version = "0.2.13"
+authors = ["Peter Farr <Peter@PrismaPhonic.com>"]
+edition = "2018"
+include = [
+    "**/*.rs",
+    "Cargo.toml",
+    "README.md",
+]
+
+[lib]
+path = "src/lib.rs"
+proc-macro = true
+
+[badges]
+maintenance = { status = "actively-developed" }
+
+[dependencies]
+domain_patterns = "0.2.1"
+syn = { version = "1.0.5", features = ["derive"] }
+quote = "1.0.2"
+proc-macro2 = "1.0.3"
+
+[dev-dependencies]
+regex = "1.2.1"
+uuid = { version = "0.7.4", features = ["serde", "v4"] }
+serde = { version = "1.0.99", features = ["derive"] }
+serde_json = "1.0.40"
+failure = "0.1.5"
