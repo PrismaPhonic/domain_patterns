@@ -1,0 +1,6 @@
+[workspace]
+
+members = [
+    "domain_patterns",
+    "domain_derive",
+]
