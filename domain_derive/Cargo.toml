@@ -3,11 +3,11 @@ name = "domain_derive"
 description = "domain_derive holds derive macros for the domain_patterns crate."
 documentation = "https://docs.rs/domain_derive"
 readme = "README.md"
-repository = "https://github.com/prismaphonic/domain_derive"
+repository = "https://github.com/PrismaPhonic/domain_patterns"
 keywords = ["domain", "design", "patterns", "database", "architecture"]
 categories = ["database", "data-structures", "rust-patterns"]
 license = "MIT"
-version = "0.2.13"
+version = "0.2.131"
 authors = ["Peter Farr <Peter@PrismaPhonic.com>"]
 edition = "2018"
 include = [
@@ -24,7 +24,7 @@ proc-macro = true
 maintenance = { status = "actively-developed" }
 
 [dependencies]
-domain_patterns = { version = "0.2.1", path = "../domain_patterns" }
+domain_patterns = { version = "0.2.11", path = "../domain_patterns" }
 syn = { version = "1.0.5", features = ["derive"] }
 quote = "1.0.2"
 proc-macro2 = "1.0.3"
