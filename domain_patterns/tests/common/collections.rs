@@ -18,6 +18,8 @@ impl MockUserRepository {
 }
 
 impl Repository<NaiveUser> for MockUserRepository {
+    type Error = Error;
+
     fn insert(&mut self, entity: &NaiveUser) -> Result<Option<NaiveUser>, Error> {
         let key = entity.id();
 

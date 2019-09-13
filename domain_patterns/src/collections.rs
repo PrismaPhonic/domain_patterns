@@ -7,6 +7,9 @@ use crate::event::DomainEvent;
 /// Generic `T` is some struct that implements `Entity<K>` where `K` is used as the key in the repository methods.  In other words
 /// it's expected that an entities id is used as the key for insert and retrieval.
 pub trait Repository<T: AggregateRoot> {
+    /// An error that communicates that something went wrong at the database level.
+    type Error;
+
     /// Inserts an entity into the underlying persistent storage (MySQL, Postgres, Mongo etc.).
     ///
     /// Entity should be inserted at it's globally unique id. It implements the [`Entity`] interface,
@@ -26,14 +29,14 @@ pub trait Repository<T: AggregateRoot> {
     /// [`None`]: https://doc.rust-lang.org/std/option/enum.Option.html#variant.None
     /// [`Eq`]: https://doc.rust-lang.org/std/cmp/trait.Eq.html
     /// [`Hash`]: https://doc.rust-lang.org/std/hash/trait.Hash.html
-    fn insert(&mut self, entity: &T) -> Result<Option<T>, T::Error>;
+    fn insert(&mut self, entity: &T) -> Result<Option<T>, Self::Error>;
 
     /// Returns the entity corresponding to the supplied key as an owned type.
     ///
     /// # Failure case
     ///
     /// If we fail to communicate with the underlying storage, then an error is returned.
-    fn get(&self, key: &String) -> Result<Option<T>, T::Error>;
+    fn get(&self, key: &String) -> Result<Option<T>, Self::Error>;
 
 
     /// Returns a `Vec<T>` of entities, based on the supplied `page_num` and `page_size`.
@@ -42,7 +45,7 @@ pub trait Repository<T: AggregateRoot> {
     /// # Failure case
     ///
     /// If we fail to communicate with the underlying storage, then an error is returned.
-    fn get_paged(&self, page_num: usize, page_size: usize) -> Result<Vec<T>, T::Error>;
+    fn get_paged(&self, page_num: usize, page_size: usize) -> Result<Vec<T>, Self::Error>;
 
     /// Returns `true` if the underlying storage contains an entity at the specified key,
     /// and otherwise returns `false`.
@@ -53,7 +56,7 @@ pub trait Repository<T: AggregateRoot> {
     ///
     /// [`Eq`]: https://doc.rust-lang.org/std/cmp/trait.Eq.html
     /// [`Hash`]: https://doc.rust-lang.org/std/hash/trait.Hash.html
-    fn contains_key(&self, key: &String) -> Result<bool, T::Error> {
+    fn contains_key(&self, key: &String) -> Result<bool, Self::Error> {
         Ok(self.get(key)?.is_some())
     }
 
@@ -67,7 +70,7 @@ pub trait Repository<T: AggregateRoot> {
     ///
     /// [`Eq`]: https://doc.rust-lang.org/std/cmp/trait.Eq.html
     /// [`Hash`]: https://doc.rust-lang.org/std/hash/trait.Hash.html
-    fn update(&mut self, entity: &T) -> Result<Option<T>, T::Error>;
+    fn update(&mut self, entity: &T) -> Result<Option<T>, Self::Error>;
 
     /// Removes an entity from the underlying storage at the given key,
     /// returning the entity at the key if it existed, and otherwise returning [`None`]
@@ -79,7 +82,7 @@ pub trait Repository<T: AggregateRoot> {
     /// [`None`]: https://doc.rust-lang.org/std/option/enum.Option.html#variant.None
     /// [`Eq`]: https://doc.rust-lang.org/std/cmp/trait.Eq.html
     /// [`Hash`]: https://doc.rust-lang.org/std/hash/trait.Hash.html
-    fn remove(&mut self, key: &String) -> Result<Option<T>, T::Error>;
+    fn remove(&mut self, key: &String) -> Result<Option<T>, Self::Error>;
 }
 
 /// A trait that provides a collection like abstraction over read only database access.
