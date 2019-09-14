@@ -2,7 +2,7 @@
 extern crate domain_derive;
 
 #[macro_use]
-extern crate failure;
+extern crate snafu;
 
 use domain_patterns::collections::*;
 pub mod common;

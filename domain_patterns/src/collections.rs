@@ -8,7 +8,7 @@ use crate::event::DomainEvent;
 /// it's expected that an entities id is used as the key for insert and retrieval.
 pub trait Repository<T: AggregateRoot> {
     /// An error that communicates that something went wrong at the database level.
-    type Error;
+    type Error: std::error::Error + std::fmt::Display;
 
     /// Inserts an entity into the underlying persistent storage (MySQL, Postgres, Mongo etc.).
     ///
@@ -90,12 +90,15 @@ pub trait Repository<T: AggregateRoot> {
 /// Generic `T` is some struct that implements `Entity<K>` where `K` is used as the key in the repository methods.  In other words
 /// it's expected that an entities id is used as the key for insert and retrieval.
 pub trait ReadRepository<T: AggregateRoot> {
+    /// An error that communicates that something went wrong at the database level.
+    type Error: std::error::Error + std::fmt::Display;
+
     /// Returns the entity corresponding to the supplied key as an owned type.
     ///
     /// # Failure case
     ///
     /// If we fail to communicate with the underlying storage, then an error is returned.
-    fn get(&self, key: &String) -> Result<Option<T>, T::Error>;
+    fn get(&self, key: &String) -> Result<Option<T>, Self::Error>;
 
 
     /// Returns a `Vec<T>` of entities, based on the supplied `page_num` and `page_size`.
@@ -104,7 +107,7 @@ pub trait ReadRepository<T: AggregateRoot> {
     /// # Failure case
     ///
     /// If we fail to communicate with the underlying storage, then an error is returned.
-    fn get_paged(&self, page_num: usize, page_size: usize) -> Result<Vec<T>, T::Error>;
+    fn get_paged(&self, page_num: usize, page_size: usize) -> Result<Vec<T>, Self::Error>;
 
     /// Returns `true` if the underlying storage contains an entity at the specified key,
     /// and otherwise returns `false`.
@@ -115,7 +118,7 @@ pub trait ReadRepository<T: AggregateRoot> {
     ///
     /// [`Eq`]: https://doc.rust-lang.org/std/cmp/trait.Eq.html
     /// [`Hash`]: https://doc.rust-lang.org/std/hash/trait.Hash.html
-    fn contains_key(&self, key: &String) -> Result<bool, T::Error> {
+    fn contains_key(&self, key: &String) -> Result<bool, Self::Error> {
         Ok(self.get(key)?.is_some())
     }
 }

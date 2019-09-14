@@ -24,7 +24,7 @@ proc-macro = true
 maintenance = { status = "actively-developed" }
 
 [dependencies]
-domain_patterns = { version = "0.2.11", path = "../domain_patterns" }
+domain_patterns = { version = "0.2.13", path = "../domain_patterns" }
 syn = { version = "1.0.5", features = ["derive"] }
 quote = "1.0.2"
 proc-macro2 = "1.0.3"

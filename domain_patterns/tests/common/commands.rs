@@ -4,9 +4,10 @@ use std::any::Any;
 use std::collections::HashMap;
 use domain_patterns::collections::Repository;
 use uuid::Uuid;
-use crate::common::{MockUserRepository, NaiveUser, Error, ErrorKind};
-use crate::common::ErrorKind::NotFound;
+use crate::common::{MockUserRepository, NaiveUser, Error};
+use crate::common::errors::Error::NotFound;
 
+#[derive(Command)]
 pub struct CreateUserCommand {
     pub id: Uuid,
     pub first_name: String,
@@ -14,27 +15,17 @@ pub struct CreateUserCommand {
     pub email: String,
 }
 
+#[derive(Command)]
 pub struct ChangeEmailCommand {
     pub id: Uuid,
     pub email: String,
 }
 
-impl Command for CreateUserCommand {}
-
-impl Command for ChangeEmailCommand {}
-
-// TODO: Remove once we have a derive macro for this.
-impl Message for CreateUserCommand {}
-impl Message for ChangeEmailCommand {}
-
+#[derive(Command)]
 enum UserCommands {
     CreateUserCommand(CreateUserCommand),
     ChangeEmailCommand(ChangeEmailCommand),
 }
-
-impl Command for UserCommands {}
-
-impl Message for UserCommands {}
 
 pub struct UserCommandsHandler {
     // This would be an abstraction over a database connection in a real example.
