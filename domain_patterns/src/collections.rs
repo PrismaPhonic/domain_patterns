@@ -74,7 +74,8 @@ pub trait Repository<T: AggregateRoot> {
     fn update(&mut self, entity: &T) -> Result<Option<String>, Self::Error>;
 
     /// Removes an entity from the underlying storage at the given key,
-    /// returning the entity at the key if it existed, and otherwise returning [`None`]
+    /// returning the entity key if it was in the database and deleted, and otherwise returning [`None`]
+    /// if the entity was not found (no rows effected by the operation).
     ///
     /// # Failure case
     ///
@@ -83,7 +84,7 @@ pub trait Repository<T: AggregateRoot> {
     /// [`None`]: https://doc.rust-lang.org/std/option/enum.Option.html#variant.None
     /// [`Eq`]: https://doc.rust-lang.org/std/cmp/trait.Eq.html
     /// [`Hash`]: https://doc.rust-lang.org/std/hash/trait.Hash.html
-    fn remove(&mut self, key: &String) -> Result<Option<T>, Self::Error>;
+    fn remove(&mut self, key: &String) -> Result<Option<String>, Self::Error>;
 }
 
 /// A trait that provides a collection like abstraction over read only database access.

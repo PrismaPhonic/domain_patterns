@@ -78,9 +78,13 @@ impl Repository<NaiveUser> for MockUserRepository {
         Ok(result)
     }
 
-    fn remove(&mut self, key: &String) -> Result<Option<NaiveUser>, Error> {
+    fn remove(&mut self, key: &String) -> Result<Option<String>, Error> {
         let result = self.data.remove(key);
-        Ok(result)
+        if let Some(user) = result {
+            Ok(Some(user.id()))
+        } else {
+            Ok(None)
+        }
     }
 }
 
