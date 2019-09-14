@@ -20,14 +20,14 @@ impl MockUserRepository {
 impl Repository<NaiveUser> for MockUserRepository {
     type Error = Error;
 
-    fn insert(&mut self, entity: &NaiveUser) -> Result<Option<NaiveUser>, Error> {
+    fn insert(&mut self, entity: &NaiveUser) -> Result<Option<String>, Error> {
         let key = entity.id();
 
         let result = if self.contains_key(&key).unwrap() {
             None
         } else {
-                self.data.insert(entity.id().clone(), entity.clone());
-            self.get(&key).unwrap()
+            self.data.insert(entity.id().clone(), entity.clone());
+            Some(key)
         };
 
         Ok(result)
@@ -65,12 +65,12 @@ impl Repository<NaiveUser> for MockUserRepository {
         Ok(result)
     }
 
-    fn update(&mut self, entity: &NaiveUser) -> Result<Option<NaiveUser>, Error> {
+    fn update(&mut self, entity: &NaiveUser) -> Result<Option<String>, Error> {
         let key = entity.id();
 
         let result = if self.contains_key(&key).unwrap() {
             self.data.insert(entity.id().clone(), entity.clone());
-            self.get(&key).unwrap()
+            Some(key)
         } else {
             None
         };

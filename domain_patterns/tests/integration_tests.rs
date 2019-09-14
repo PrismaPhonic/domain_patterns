@@ -49,14 +49,11 @@ fn test_update_user() {
 
     let updated_name = "new_name".to_string();
     test_user.change_fname(updated_name.clone());
-    let mut updated_user = user_repo.update(&test_user).unwrap();
+    user_repo.update(&test_user).unwrap();
     // check that we get back Some() which implies updating worked.
     assert!(returned_entity.is_some());
-    // Check that our name is correct in the returned (updated) user.
-    assert_eq!(updated_user.unwrap().first_name(), &updated_name);
 
-    // sanity check with fresh get and check that name was updated;
-    updated_user = user_repo.get(&user_id.to_string()).unwrap();
+    let updated_user = user_repo.get(&user_id.to_string()).unwrap();
     assert_eq!(updated_user.unwrap().first_name(), &updated_name);
 }
 

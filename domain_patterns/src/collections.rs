@@ -15,8 +15,8 @@ pub trait Repository<T: AggregateRoot> {
     /// Entity should be inserted at it's globally unique id. It implements the [`Entity`] interface,
     /// so it's globally unique id can be accessed by calling [`id()`].
     ///
-    /// If the underlying storage did not have this key present, then insert is successful and the entity is returned.
-    /// It might be returned with updated (computed) data that was computed by the database.
+    /// If the underlying storage did not have this key present, then insert is successful and the primary key is returned.
+    /// This allows for auto-generated ids to be returned after insert.
     ///
     /// If the underlying storage does have the key present, then [`None`] is returned.
     ///
@@ -29,7 +29,7 @@ pub trait Repository<T: AggregateRoot> {
     /// [`None`]: https://doc.rust-lang.org/std/option/enum.Option.html#variant.None
     /// [`Eq`]: https://doc.rust-lang.org/std/cmp/trait.Eq.html
     /// [`Hash`]: https://doc.rust-lang.org/std/hash/trait.Hash.html
-    fn insert(&mut self, entity: &T) -> Result<Option<T>, Self::Error>;
+    fn insert(&mut self, entity: &T) -> Result<Option<String>, Self::Error>;
 
     /// Returns the entity corresponding to the supplied key as an owned type.
     ///
@@ -60,8 +60,9 @@ pub trait Repository<T: AggregateRoot> {
         Ok(self.get(key)?.is_some())
     }
 
-    /// Updates the entity in the underlying storage mechanism and returns the up to date
-    /// entity to the caller.  If the entity does not exist in the database (it's unique
+    /// Updates the entity in the underlying storage mechanism and if successful returns the primary
+    /// key to the caller, which because it implements `Entity` can be had for free by calling `.id()`
+    /// on the entity.  If the entity does not exist in the database (it's unique
     /// id is not in use), then we return [`None`].
     ///
     /// # Failure case
@@ -70,7 +71,7 @@ pub trait Repository<T: AggregateRoot> {
     ///
     /// [`Eq`]: https://doc.rust-lang.org/std/cmp/trait.Eq.html
     /// [`Hash`]: https://doc.rust-lang.org/std/hash/trait.Hash.html
-    fn update(&mut self, entity: &T) -> Result<Option<T>, Self::Error>;
+    fn update(&mut self, entity: &T) -> Result<Option<String>, Self::Error>;
 
     /// Removes an entity from the underlying storage at the given key,
     /// returning the entity at the key if it existed, and otherwise returning [`None`]
