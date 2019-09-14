@@ -33,7 +33,7 @@ impl Repository<NaiveUser> for MockUserRepository {
         Ok(result)
     }
 
-    fn get(&self, key: &String) -> Result<Option<NaiveUser>, Error> {
+    fn get(&mut self, key: &String) -> Result<Option<NaiveUser>, Error> {
         let result = if let Some(user) = self.data.get(key) {
             Some(user.clone())
         } else {
@@ -42,7 +42,7 @@ impl Repository<NaiveUser> for MockUserRepository {
         Ok(result)
     }
 
-    fn get_paged(&self, page_num: usize, page_size: usize) -> Result<Vec<NaiveUser>, Error> {
+    fn get_paged(&mut self, page_num: usize, page_size: usize) -> Result<Vec<NaiveUser>, Error> {
         let entire_collection: Vec<NaiveUser> = self.data
             .iter()
             .map(|(_, u)| {

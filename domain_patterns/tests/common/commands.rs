@@ -40,7 +40,7 @@ impl UserCommandsHandler {
     }
 
     // This normally wouldn't be here at all, but this is so we can get back a result in mock testing
-    pub fn contains_key(&self, key: &String) -> bool {
+    pub fn contains_key(&mut self, key: &String) -> bool {
         self.repo.contains_key(key).unwrap()
     }
 }

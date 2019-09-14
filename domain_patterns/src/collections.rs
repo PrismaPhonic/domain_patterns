@@ -36,7 +36,7 @@ pub trait Repository<T: AggregateRoot> {
     /// # Failure case
     ///
     /// If we fail to communicate with the underlying storage, then an error is returned.
-    fn get(&self, key: &String) -> Result<Option<T>, Self::Error>;
+    fn get(&mut self, key: &String) -> Result<Option<T>, Self::Error>;
 
 
     /// Returns a `Vec<T>` of entities, based on the supplied `page_num` and `page_size`.
@@ -45,7 +45,7 @@ pub trait Repository<T: AggregateRoot> {
     /// # Failure case
     ///
     /// If we fail to communicate with the underlying storage, then an error is returned.
-    fn get_paged(&self, page_num: usize, page_size: usize) -> Result<Vec<T>, Self::Error>;
+    fn get_paged(&mut self, page_num: usize, page_size: usize) -> Result<Vec<T>, Self::Error>;
 
     /// Returns `true` if the underlying storage contains an entity at the specified key,
     /// and otherwise returns `false`.
@@ -56,7 +56,7 @@ pub trait Repository<T: AggregateRoot> {
     ///
     /// [`Eq`]: https://doc.rust-lang.org/std/cmp/trait.Eq.html
     /// [`Hash`]: https://doc.rust-lang.org/std/hash/trait.Hash.html
-    fn contains_key(&self, key: &String) -> Result<bool, Self::Error> {
+    fn contains_key(&mut self, key: &String) -> Result<bool, Self::Error> {
         Ok(self.get(key)?.is_some())
     }
 
