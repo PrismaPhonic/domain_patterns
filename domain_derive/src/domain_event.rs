@@ -30,7 +30,6 @@ fn has_id_field(data: &Data) -> bool {
         Data::Struct(st) => {
             st.fields.iter().any(|f| {
                 f.clone().ident.unwrap() == "id"
-                    && is_uuid_type(f)
             })
         },
         _ => false,
