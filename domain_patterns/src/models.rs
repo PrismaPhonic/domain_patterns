@@ -14,7 +14,6 @@ use crate::event::DomainEvent;
 ///
 /// struct User {
 ///     id: uuid::Uuid,
-///     version: u64,
 ///     email: String,
 ///     password: String,
 /// }
@@ -22,10 +21,6 @@ use crate::event::DomainEvent;
 /// impl Entity for User {
 ///     fn id(&self) -> String {
 ///         self.id.to_string()
-///     }
-///
-///     fn version(&self) -> u64 {
-///         self.version
 ///     }
 /// }
 ///
@@ -41,6 +36,14 @@ pub trait Entity: PartialEq {
     /// id should be the entities globally unique id. It doesn't matter what it is internally as
     /// long as that thing can be returned as a string (implements Display from std)
     fn id(&self) -> String;
+}
+
+pub trait AggregateRoot: Entity {
+    /// This type alias should point to an enum of events that the aggregate root will create and publish.
+    type Events: DomainEvent;
+
+    /// This type alias should point to the root error type for the crate.
+    type Error;
 
     /// version is a simple integers that is incremented for every mutation.
     /// This allows us to have something like an `EntityCreated` event where we
@@ -52,14 +55,6 @@ pub trait Entity: PartialEq {
     fn next_version(&self) -> u64 {
         self.version() + 1
     }
-}
-
-pub trait AggregateRoot: Entity {
-    /// This type alias should point to an enum of events that the aggregate root will create and publish.
-    type Events: DomainEvent;
-
-    /// This type alias should point to the root error type for the crate.
-    type Error;
 }
 
 /// Applier should be implemented by aggregate roots in systems where you want to apply messages (commands or events)

@@ -43,6 +43,10 @@ impl AggregateRoot for NaiveUser {
     type Events = UserEvents;
 
     type Error = Error;
+
+    fn version(&self) -> u64 {
+        self.version as u64
+    }
 }
 
 impl NaiveUser {
