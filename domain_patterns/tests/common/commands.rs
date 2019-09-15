@@ -3,6 +3,7 @@ use domain_patterns::message::Message;
 use std::any::Any;
 use std::collections::HashMap;
 use domain_patterns::collections::Repository;
+use domain_patterns::models::Entity;
 use uuid::Uuid;
 use crate::common::{MockUserRepository, NaiveUser, Error};
 use crate::common::errors::Error::NotFound;
@@ -46,23 +47,24 @@ impl UserCommandsHandler {
 }
 
 impl Handles<CreateUserCommand> for UserCommandsHandler {
-    type Error = Error;
+    type Result = Result<Option<String>, Error>;
 
-    fn handle(&mut self, msg: &CreateUserCommand) -> Result<(), Self::Error> {
+    fn handle(&mut self, msg: &CreateUserCommand) -> Self::Result {
         let user = NaiveUser::new(msg.id.clone(), msg.first_name.clone(), msg.last_name.clone(), msg.email.clone())?;
         self.repo.insert(&user);
 
-        Ok(())
+        Ok(Some(user.id()))
     }
 }
 
 impl Handles<ChangeEmailCommand> for UserCommandsHandler {
-    type Error = Error;
+    type Result = Result<Option<String>, Error>;
 
-    fn handle(&mut self, msg: &ChangeEmailCommand) -> Result<(), Self::Error> {
+    fn handle(&mut self, msg: &ChangeEmailCommand) -> Self::Result {
         let user = self.repo.get(&msg.id.to_string())?;
         if let Some(mut u) = user {
-            return Ok(u.change_email(&msg.email)?);
+            u.change_email(&msg.email)?;
+            return Ok(Some(u.id()));
         }
 
         Err(NotFound.into())
@@ -70,9 +72,9 @@ impl Handles<ChangeEmailCommand> for UserCommandsHandler {
 }
 
 impl Handles<UserCommands> for UserCommandsHandler {
-    type Error = Error;
+    type Result = Result<Option<String>, Error>;
 
-    fn handle(&mut self, msg: &UserCommands) -> Result<(), Self::Error> {
+    fn handle(&mut self, msg: &UserCommands) -> Self::Result {
         match msg {
             UserCommands::CreateUserCommand(cmd) => self.handle(cmd),
             UserCommands::ChangeEmailCommand(cmd) => self.handle(cmd),

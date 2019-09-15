@@ -10,7 +10,7 @@ pub trait Command: Message {}
 /// can simply match on self, and then call .handle which will use the incoming variant type to call the appropriate
 /// generic Handles implementation.
 pub trait Handles<T: Message> {
-    type Error;
+    type Result;
 
-    fn handle(&mut self, msg: &T) -> Result<(), Self::Error>;
+    fn handle(&mut self, msg: &T) -> Self::Result;
 }
