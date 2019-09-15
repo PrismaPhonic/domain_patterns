@@ -8,7 +8,6 @@ use syn::export::TokenStream2;
 /// 2. There needs to be a version field of any integer type (floating point not allowed).
 pub fn precondition(input: &DeriveInput) -> Result<(), syn::Error> {
     check_id_field(input)?;
-    check_version_field(input)?;
     check_public_fields(input)?;
 
     Ok(())
@@ -23,7 +22,10 @@ pub fn produce_getters(input: &DeriveInput) -> Result<TokenStream2, syn::Error> 
     if let syn::Data::Struct(DataStruct { ref fields, .. }) = input.data {
         let generated = fields
             .iter()
-            // We already generate getters for id and version in Entity impl, so don't do it here.
+            // We already create getter for id because it's required, and version should only
+            // exist in aggregate root, which there is overlap between Entity and Aggregate root
+            // (any aggregate root is also an entity) so we should avoid making version getter so
+            // we don't have collision with getter from Aggregate root implementation.
             .filter(|f| {
                 let field_name = f.ident.clone().unwrap();
                 field_name != "id" && field_name != "version"

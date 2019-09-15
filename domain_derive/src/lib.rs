@@ -168,10 +168,6 @@ pub fn entity_derive(input: TokenStream) -> TokenStream {
             fn id(&self) -> String {
                 self.id.to_string()
             }
-
-            fn version(&self) -> u64 {
-                self.version as u64
-            }
         }
 
         impl std::cmp::PartialEq for #name {
