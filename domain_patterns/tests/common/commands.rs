@@ -49,7 +49,7 @@ impl UserCommandsHandler {
 impl Handles<CreateUserCommand> for UserCommandsHandler {
     type Result = Result<Option<String>, Error>;
 
-    fn handle(&mut self, msg: &CreateUserCommand) -> Self::Result {
+    fn handle(&mut self, msg: CreateUserCommand) -> Self::Result {
         let user = NaiveUser::new(msg.id.clone(), msg.first_name.clone(), msg.last_name.clone(), msg.email.clone())?;
         self.repo.insert(&user);
 
@@ -60,7 +60,7 @@ impl Handles<CreateUserCommand> for UserCommandsHandler {
 impl Handles<ChangeEmailCommand> for UserCommandsHandler {
     type Result = Result<Option<String>, Error>;
 
-    fn handle(&mut self, msg: &ChangeEmailCommand) -> Self::Result {
+    fn handle(&mut self, msg: ChangeEmailCommand) -> Self::Result {
         let user = self.repo.get(&msg.id.to_string())?;
         if let Some(mut u) = user {
             u.change_email(&msg.email)?;
@@ -74,7 +74,7 @@ impl Handles<ChangeEmailCommand> for UserCommandsHandler {
 impl Handles<UserCommands> for UserCommandsHandler {
     type Result = Result<Option<String>, Error>;
 
-    fn handle(&mut self, msg: &UserCommands) -> Self::Result {
+    fn handle(&mut self, msg: UserCommands) -> Self::Result {
         match msg {
             UserCommands::CreateUserCommand(cmd) => self.handle(cmd),
             UserCommands::ChangeEmailCommand(cmd) => self.handle(cmd),

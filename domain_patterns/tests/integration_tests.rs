@@ -108,33 +108,7 @@ fn test_survey_command() {
     };
 
     let mut user_command_handler = UserCommandsHandler::new(user_repo);
-    user_command_handler.handle(&create_user_command).unwrap();
+    user_command_handler.handle(create_user_command).unwrap();
 
     assert!(user_command_handler.contains_key(&new_id.to_string()))
 }
-
-// Old test - needs lots of refactoring now
-//#[test]
-//#[allow(unused)]
-//fn test_survey_command() {
-//    let user_id1 = Uuid::new_v4();
-//    let test_user1 = common::create_test_user(&user_id1);
-//    let mut user_repo = MockUserRepository::new();
-//
-//    let new_id = Uuid::new_v4();
-//
-//    let create_user_command = CreateUserCommand {
-//        id: new_id.clone(),
-//        first_name: "test_first".to_string(),
-//        last_name: "test_last".to_string(),
-//        email: "email@email.com".to_string()
-//    };
-//
-//    let user_command_handler = CreateUserCommandHandler::new(user_repo);
-//    let mut command_gateway = CommandGateway::new();
-//
-//    command_gateway.register(user_command_handler);
-//    command_gateway.handle(create_user_command);
-//
-//    assert!(command_gateway.contains_key("CreateUserCommand".to_string()));
-//}

@@ -12,5 +12,5 @@ pub trait Command: Message {}
 pub trait Handles<T: Message> {
     type Result;
 
-    fn handle(&mut self, msg: &T) -> Self::Result;
+    fn handle(&mut self, msg: T) -> Self::Result;
 }
