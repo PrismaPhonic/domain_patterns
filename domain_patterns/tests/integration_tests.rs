@@ -88,7 +88,7 @@ fn test_get_paged() {
     assert!(user_repo.contains_key(&user_id2.to_string()).unwrap());
 
     let results = user_repo.get_paged(1, 2).unwrap();
-    assert_eq!(results.len(), 2)
+    assert_eq!(results.unwrap().len(), 2)
 }
 
 #[test]

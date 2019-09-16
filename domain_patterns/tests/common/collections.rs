@@ -42,7 +42,7 @@ impl Repository<NaiveUser> for MockUserRepository {
         Ok(result)
     }
 
-    fn get_paged(&mut self, page_num: usize, page_size: usize) -> Result<Vec<NaiveUser>, Error> {
+    fn get_paged(&mut self, page_num: usize, page_size: usize) -> Result<Option<Vec<NaiveUser>>, Error> {
         let entire_collection: Vec<NaiveUser> = self.data
             .iter()
             .map(|(_, u)| {
@@ -50,7 +50,7 @@ impl Repository<NaiveUser> for MockUserRepository {
             }).collect();
 
         let result = if (page_num - 1) * page_size > entire_collection.len() {
-            Vec::new()
+            None
         } else {
             let start = (page_num - 1) * page_size;
             let end = if start + page_size > entire_collection.len() {
@@ -59,7 +59,7 @@ impl Repository<NaiveUser> for MockUserRepository {
                 start + page_size
             };
 
-            entire_collection[start..end].to_vec()
+            Some(entire_collection[start..end].to_vec())
         };
 
         Ok(result)

@@ -45,7 +45,7 @@ pub trait Repository<T: AggregateRoot> {
     /// # Failure case
     ///
     /// If we fail to communicate with the underlying storage, then an error is returned.
-    fn get_paged(&mut self, page_num: usize, page_size: usize) -> Result<Vec<T>, Self::Error>;
+    fn get_paged(&mut self, page_num: usize, page_size: usize) -> Result<Option<Vec<T>>, Self::Error>;
 
     /// Returns `true` if the underlying storage contains an entity at the specified key,
     /// and otherwise returns `false`.
@@ -109,7 +109,7 @@ pub trait ReadRepository<T: AggregateRoot> {
     /// # Failure case
     ///
     /// If we fail to communicate with the underlying storage, then an error is returned.
-    fn get_paged(&mut self, page_num: usize, page_size: usize) -> Result<Vec<T>, Self::Error>;
+    fn get_paged(&mut self, page_num: usize, page_size: usize) -> Result<Option<Vec<T>>, Self::Error>;
 
     /// Returns `true` if the underlying storage contains an entity at the specified key,
     /// and otherwise returns `false`.
