@@ -1,6 +1,6 @@
 [package]
 name = "domain_patterns"
-version = "0.2.139"
+version = "0.2.140"
 authors = ["Peter Farr <Peter@PrismaPhonic.com>"]
 description = "Domain patterns holds patterns from the world of Domain Driven Design."
 keywords = ["domain", "design", "patterns", "database", "architecture"]

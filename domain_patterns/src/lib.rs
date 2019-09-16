@@ -55,5 +55,8 @@ pub mod event;
 /// Command module holds traits relevant to marking commands, as well as command handler traits.
 pub mod command;
 
+/// Query module holds traits relevant to representing query handlers in a CQRS architecture.
+pub mod query;
+
 /// Message module holds a single marker trait that is shared by both commands and events, so command handlers can handle both commands and events.
 pub mod message;

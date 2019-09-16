@@ -429,3 +429,21 @@ pub fn command_derive(input: TokenStream) -> TokenStream {
 
     TokenStream::from(expanded)
 }
+
+/// The `Query` derive macro can be used to automatically implement the Query marker trait
+/// from the `domain_patterns` crate.
+#[proc_macro_derive(Query)]
+pub fn query_derive(input: TokenStream) -> TokenStream {
+    let input: DeriveInput = parse_macro_input!(input as DeriveInput);
+
+    // No precondition checks that I can think of since these are just simple marker traits
+
+    // Struct name
+    let name = &input.ident;
+
+    let expanded = quote! {
+        impl Query for #name {}
+    };
+
+    TokenStream::from(expanded)
+}
