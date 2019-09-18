@@ -89,9 +89,9 @@ pub trait Repository<T: AggregateRoot> {
 
 /// A trait that provides a collection like abstraction over read only database access.
 ///
-/// Generic `T` is some struct that implements `Entity<K>` where `K` is used as the key in the repository methods.  In other words
-/// it's expected that an entities id is used as the key for insert and retrieval.
-pub trait ReadRepository<T: AggregateRoot> {
+/// Generic T is likely a DTO used for pure data transfer to an external caller,
+/// whether that's via a REST controller or over gRPC as a proto type etc.
+pub trait ReadRepository<T> {
     /// An error that communicates that something went wrong at the database level.
     type Error: std::error::Error + std::fmt::Display + 'static;
 
