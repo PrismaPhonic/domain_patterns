@@ -8,7 +8,7 @@ use crate::event::DomainEvent;
 /// it's expected that an entities id is used as the key for insert and retrieval.
 pub trait Repository<T: AggregateRoot> {
     /// An error that communicates that something went wrong at the database level.
-    type Error: std::error::Error + std::fmt::Display + 'static;
+    type Error: std::error::Error + std::fmt::Display + 'static + Send;
 
     /// Inserts an entity into the underlying persistent storage (MySQL, Postgres, Mongo etc.).
     ///
@@ -93,7 +93,7 @@ pub trait Repository<T: AggregateRoot> {
 /// whether that's via a REST controller or over gRPC as a proto type etc.
 pub trait ReadRepository<T> {
     /// An error that communicates that something went wrong at the database level.
-    type Error: std::error::Error + std::fmt::Display + 'static;
+    type Error: std::error::Error + std::fmt::Display + 'static + Send;
 
     /// Returns the entity corresponding to the supplied key as an owned type.
     ///
