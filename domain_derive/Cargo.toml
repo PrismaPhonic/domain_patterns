@@ -7,7 +7,7 @@ repository = "https://github.com/PrismaPhonic/domain_patterns"
 keywords = ["domain", "design", "patterns", "database", "architecture"]
 categories = ["database", "data-structures", "rust-patterns"]
 license = "MIT"
-version = "0.2.134"
+version = "0.2.135"
 authors = ["Peter Farr <Peter@PrismaPhonic.com>"]
 edition = "2018"
 include = [
@@ -24,7 +24,7 @@ proc-macro = true
 maintenance = { status = "actively-developed" }
 
 [dependencies]
-domain_patterns = { version = "0.2.140", path = "../domain_patterns" }
+domain_patterns = { version = "0.2.141", path = "../domain_patterns" }
 syn = { version = "1.0.5", features = ["derive"] }
 quote = "1.0.2"
 proc-macro2 = "1.0.3"
