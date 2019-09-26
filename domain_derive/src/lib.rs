@@ -443,6 +443,7 @@ pub fn query_derive(input: TokenStream) -> TokenStream {
 
     let expanded = quote! {
         impl Query for #name {}
+        impl Query for &#name {}
     };
 
     TokenStream::from(expanded)
