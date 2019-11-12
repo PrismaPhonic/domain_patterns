@@ -5,7 +5,7 @@
 //! from the `domain_patterns` crate.  This only works if certain preconditions are met:
 //!
 //! 1. You are applying this to a struct.
-//! 2. Your struct has an `id` field of type `Uuid`.
+//! 2. Your struct has an `id` field of a type which can have `to_string()` called on it.
 //! 3. Your struct has a `version` field which is some integer type.
 //!
 //! ```edition2018
@@ -139,7 +139,7 @@ use crate::domain_events::create_inner_match_for_getter;
 /// from the `domain_patterns` crate.  This only works if certain preconditions are met:
 ///
 /// 1. You are applying this to a struct.
-/// 2. Your struct has an `id` field of type `Uuid`.
+//! 2. Your struct has an `id` field of a type which can have `to_string()` called on it.
 /// 3. Your struct has a `version` field which is some integer type.
 ///
 /// ```edition2018

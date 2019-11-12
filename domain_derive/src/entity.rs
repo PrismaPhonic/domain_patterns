@@ -102,7 +102,7 @@ fn is_public(field: &Field) -> bool {
 fn check_id_field(input: &DeriveInput) -> Result<(), syn::Error> {
     if !has_id_field(&input.data) {
         let input_span = input.ident.span();
-        return Err(Error::new(input_span, "expected `id` field with type Uuid"));
+        return Err(Error::new(input_span, "expected `id` field with type that implements Display"));
     }
 
     Ok(())
@@ -122,7 +122,7 @@ fn has_id_field(data: &Data) -> bool {
         Data::Struct(st) => {
             st.fields.iter().any(|f| {
                 f.clone().ident.unwrap() == "id"
-                    && is_uuid_type(f)
+                    // TODO: Add check that type implements Display.
             })
         },
         _ => false,
